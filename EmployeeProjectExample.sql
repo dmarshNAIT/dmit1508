@@ -22,6 +22,7 @@ CREATE TABLE EmployeeOnProject (
 ,	ProjectNumber	INT			NOT NULL
 		CONSTRAINT FK_EmployeeOnProjectToProject REFERENCES Project (ProjectNumber)
 ,	WeeklyHours		INT			NOT NULL
+		CONSTRAINT CK_MaxWeeklyHours CHECK (WeeklyHours <= 20)
 ,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
 
