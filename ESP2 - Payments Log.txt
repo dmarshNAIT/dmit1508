@@ -1,0 +1,35 @@
+* Initial Table *
+
+Order (CustName, CustNum, OrderNum (PK), OrderDate, OrderTotal, (PaymentDate, PaymentAmt, PaymentNum, BalOwing, PayType, DepBatch#))
+
+* 1NF *
+Order (CustFirstName, CustLastName, CustNum, OrderNum (PK), OrderDate, OrderTotal )
+
+PaymentDetails (OrderNum (PK)(FK), PaymentNum(PK), PaymentDate, PaymentAmt, BalOwing, PayType, DepBatch#)
+
+* 2NF *
+
+Order (CustFirstName, CustLastName, CustNum, OrderNum (PK), OrderDate, OrderTotal )
+
+PaymentDetails (OrderNum (PK)(FK), PaymentNum(PK), PaymentDate, PaymentAmt, BalOwing, PayType, DepBatch#)
+
+* 3NF *
+
+Order (CustNum (FK), OrderNum (PK), OrderDate, OrderTotal )
+
+Customer (CustNum (PK), CustFirstName, CustLastName)
+
+PaymentDetails (OrderNum (PK)(FK), PaymentNum(PK), PaymentDate, PaymentAmt, BalOwing, PayType, DepBatch#)
+
+
+
+
+
+
+
+
+
+
+
+
+

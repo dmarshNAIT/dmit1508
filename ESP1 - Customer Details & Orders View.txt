@@ -1,0 +1,50 @@
+** Customer Details View **
+* Initial Table *
+Customer (Cust # (PK), Cust Name, Address, City, Prov, Post Code, HomePhone)
+
+* 1NF *
+Customer (Cust # (PK), FirstName, LastName, Address, City, Prov, Post Code, HomePhone)
+
+* 2NF *
+Customer (Cust # (PK), FirstName, LastName, Address, City, Prov, Post Code, HomePhone)
+
+* 3NF *
+Customer (Cust # (PK), FirstName, LastName, Address, City, Prov, Post Code, HomePhone)
+
+** Customer Orders View **
+* Initial *
+Order (CustName, Cust#, CustAddr, CustPh, Date, Order# (PK), (Item#, ItemDesc, ItemQuantity, ItemSellingPrice, ItemAmount, ItemCurrentPrice ), Subtotal, GST, Total)
+
+* 1NF *
+Order (CustFirstName, CustLastName, Cust#, CustAddr, City, Prov, PostCode, CustPh, Date, **Order# (PK)**, Subtotal, GST, Total)
+
+OrderDetails (**Order# (PK)(FK), Item# (PK)**, ItemDesc, ItemQuantity, ItemSellingPrice, ItemAmount, ItemCurrentPrice)
+
+* 2NF *
+Order (CustFirstName, CustLastName, Cust#, CustAddr, City, Prov, PostCode, CustPh, Date, **Order# (PK)**, Subtotal, GST, Total)
+
+OrderDetails (**Order# (PK)(FK), Item# (PK) (FK)**, ItemQuantity, ItemSellingPrice, ItemAmount)
+
+Item (**Item# (PK)**, ItemDesc, ItemCurrentPrice)
+
+* 3NF *
+Customer (**Cust# (PK)**, CustFirstName, CustLastName, CustAddr, City, Prov, PostCode, CustPh)
+
+Order (Cust# (FK), Date, **Order# (PK)**, Subtotal, GST, Total)
+
+OrderDetails (**Order# (PK)(FK), Item# (PK) (FK)**, ItemQuantity, ItemSellingPrice, ItemAmount)
+
+Item (**Item# (PK)**, ItemDesc, ItemCurrentPrice)
+
+
+Next day 	> ERD
+			> Merge
+
+
+
+
+
+
+
+
+
