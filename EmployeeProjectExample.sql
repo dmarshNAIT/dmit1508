@@ -1,3 +1,5 @@
+USE EmployeeProjectExample
+
 -- create Employee table
 DROP TABLE Employee
 CREATE TABLE Employee (
@@ -23,6 +25,7 @@ CREATE TABLE EmployeeOnProject (
 		CONSTRAINT FK_EmployeeOnProjectToProject REFERENCES Project (ProjectNumber)
 ,	WeeklyHours		INT			NOT NULL
 		CONSTRAINT CK_MaxWeeklyHours CHECK (WeeklyHours <= 20)
+		CONSTRAINT DF_WeeklyHours DEFAULT 5.0
 ,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
 
