@@ -49,7 +49,7 @@ CREATE TABLE Club (
 )
 
 -- create Activity table
-CREATE TABLE Activity(
+CREATE TABLE Activity (
     StudentID    int        NOT NULL  CONSTRAINT FK_ActivityToStudent references Student (StudentID),
     ClubID       int        NOT NULL  CONSTRAINT FK_ActivityToClub references Club (ClubID),
     CONSTRAINT PK_Activity PRIMARY KEY CLUSTERED (StudentID, ClubID),
@@ -57,11 +57,45 @@ CREATE TABLE Activity(
 
 EXEC sp_help Student
 
+--	Add a MeetingLocation varchar(50) field to the Club table
+ALTER TABLE Club
+	ADD MeetingLocation VARCHAR(50) NULL
+		, ClubPresident	VARCHAR(100) NULL
 
--- examples using LIKE
---LIKE 'Edmonton' -- only Edmonton
---LIKE 'Edmonton%' -- also pick up Edmonton AB
---NOT LIKE '%[%]%' -- tentatively
+ALTER TABLE Club
+	DROP COLUMN ClubPresident
 
---LIKE '___' -- only pick up something 3 characters long
---LIKE 'da_a' 
+--	Add a constraint to birthdate to ensure the value is < todays date
+ALTER TABLE Student
+	ADD CONSTRAINT CK_Birthdate CHECK (Birthdate < GetDate())
+
+--	Add a constraint to set a default of 80 to the Hours field
+ALTER TABLE Course
+	ADD CONSTRAINT DF_Hours DEFAULT 80 FOR Hours
+
+--	Oops, changed our minds…. DISABLE the check constraint for the birthdate field
+ALTER TABLE Student
+	NOCHECK CONSTRAINT CK_Birthdate
+
+--	Yikes! Change our minds again. ENABLE the check constraint for the Birthdate field
+ALTER TABLE Student
+	CHECK CONSTRAINT CK_Birthdate
+
+--	Hold on! Call me silly…. Delete the default constraint for the Hours field now!
+ALTER TABLE Course
+	DROP CONSTRAINT DF_Hours
+
+-- disable & re-enable a FK:
+ALTER TABLE ACTIVITY
+	NOCHECK CONSTRAINT FK_ActivityToClub
+ALTER TABLE ACTIVITY
+	CHECK CONSTRAINT FK_ActivityToClub
+
+-- add indices to the Grades table
+CREATE NONCLUSTERED INDEX IX_StudentID
+	ON Grade (StudentID)
+CREATE NONCLUSTERED INDEX IX_CourseID
+	ON Grade (CourseID)
+
+-- add indices to Activity table
+CREATE NONCLUSTERED INDEX IX_StudentIDforActivityTable    ON Activity (StudentID)CREATE NONCLUSTERED INDEX IX_ClubIDforActivityTable    ON Activity (ClubID)
