@@ -15,9 +15,11 @@ DROP TABLE Club
 CREATE TABLE Course (
          CourseID        CHAR(6)        NOT NULL	CONSTRAINT PK_Course PRIMARY KEY CLUSTERED 
     ,    CourseName      VARCHAR(40)    NOT NULL
-    ,    Hours           SMALLINT		NULL		CONSTRAINT CK_CourseHours CHECK ([Hours] > 0)	-- can use "" []
+    ,    [Hours]           SMALLINT		NULL		CONSTRAINT CK_CourseHours CHECK ([Hours] > 0)	-- can use "" []
     ,    NoOfStudents    SMALLINT		NULL		CONSTRAINT CK_NoOfStudents CHECK (NoOfStudents >= 0)
 )
+
+EXEC sp_help Course
 
 -- create Student table
 create table Student(
@@ -98,4 +100,8 @@ CREATE NONCLUSTERED INDEX IX_CourseID
 	ON Grade (CourseID)
 
 -- add indices to Activity table
-CREATE NONCLUSTERED INDEX IX_StudentIDforActivityTable    ON Activity (StudentID)CREATE NONCLUSTERED INDEX IX_ClubIDforActivityTable    ON Activity (ClubID)
+CREATE NONCLUSTERED INDEX IX_StudentIDforActivityTable
+    ON Activity (StudentID)
+CREATE NONCLUSTERED INDEX IX_ClubIDforActivityTable
+    ON Activity (ClubID)
+
