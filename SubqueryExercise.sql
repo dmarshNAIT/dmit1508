@@ -95,7 +95,6 @@ HAVING COUNT(*) >= ALL (
 )
 
 --8. What is the total avg mark for the students from Edmonton?
-
 SELECT AVG(Mark) AS AverageMark
 FROM Registration
 WHERE StudentID IN (
