@@ -20,7 +20,7 @@
 	-- if it is between 11 and 20 print ‘Exceptional effort!’, 
 	-- if the number is greater than 20 print ‘Totally Awesome, Dude!’
 
--- review at 3:25pm
+-- review Friday
 
 DECLARE @myvariable VARCHAR(10)
 SET @myvariable = 'hello'
