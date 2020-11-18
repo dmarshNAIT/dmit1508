@@ -2,7 +2,7 @@
 -- Author: Dana Marsh
 USE [IQ-School]
 
--- Work through this exercise today (Wednesday) - we will review at END OF CLASS (or if we run out of time, next week)
+-- Work through this exercise: we will review next week
 
 --1.	Create a stored procedure called “GoodCourses” to select all the course names that have averages  greater than a given value. 
 
