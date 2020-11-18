@@ -76,37 +76,68 @@ USE [IQ-School]
 	--VALUES (34, GETDATE(), 1, 1, 200978500)
 
 --3.	create variables called firstname and lastname and give them a starting value. 
-	-- If the student name already is in the table then print ‘We already have a student with the name firstname lastname!’ 
+	-- If the student name already is in the table then print ‘We already have a student with the name firstname lastname!’
 	-- Other wise print ‘Welcome firstname lastname!’
 
-	-- declare @firstname and @lastname
-	-- assign @firstname and @lastname some starting values (test: one that exists, one that doesn't)
-	-- IF EXISTS (in Student table)
-		-- print ‘We already have a student with the name firstname lastname!’ 
-	-- otherwise
-		-- print ‘Welcome firstname lastname!’
+	DECLARE @FirstName VARCHAR(30), @LastName VARCHAR(30)
+	-- assign @firstname and @lastname some starting values (test: one that exists (Winnie Woo), one that doesn't)
+	SELECT    @FirstName = 'Winnie'    ,    @LastName = 'Woo'
+
+	IF EXISTS (SELECT FirstName, Lastname 
+				FROM Student 
+				WHERE FirstName = @FirstName AND LastName = @LastName)
+		BEGIN
+		PRINT 'We already have a student with the name ' + @FirstName + ' ' + @LastName + '!'
+		END
+	ELSE
+		BEGIN
+		PRINT 'Welcome, ' + @FirstName + ' ' + @LastName + '!'
+		END
 
 --4.	 create variable named staffid and give it a starting value. 
-	-- If the number of classes the staff member has ever taught is between 0 and 10 print ‘Well done!’, 
-	-- if it is between 11 and 20 print ‘Exceptional effort!’, 
-	-- if the number is greater than 20 print ‘Totally Awesome, Dude!’
+	-- If the number of classes the staff member has ever taught is between 0 and 5 print ‘Well done!’, 
+	-- if it is between 5 and 10 print ‘Exceptional effort!’, 
+	-- if the number is greater than 10 print ‘Totally Awesome, Dude!’
 
-	-- declare @StaffID
+	DECLARE @StaffID SMALLINT
 	-- give it a starting value
-
+	SET @StaffID = 6
+	-- staffID 4 has taught 11
+	-- staffID 5 has taught 6
+	-- staffID 6 has taught 3
 	-- declare a variable called @NumberOfClasses
+	DECLARE @NumberOfClasses SMALLINT
 	-- assign it the number of classes that staff member has taught
+	SELECT @NumberOfClasses = COUNT(*)                          FROM Offering                          WHERE StaffID = @StaffID
 
-	-- IF @NumberOfClasses is between 0 and 10
-		-- print ‘Well done!’
-	-- otherwise
-		-- if @NumberOfClasses is between 11 and 20
-			-- print ‘Exceptional effort!’
-		-- otherwise
-			-- print ‘Totally Awesome, Dude!’
-		
+	 IF @NumberOfClasses BETWEEN 0 AND 5
+		BEGIN
+		PRINT 'Well done!'
+		END
+	ELSE
+		BEGIN
+		IF @NumberOfClasses BETWEEN 5 AND 10
+			BEGIN
+			PRINT 'Exceptional effort!'
+			END
+		ELSE
+			BEGIN
+			PRINT 'Totally Awesome, Dude!'
+			END
+		END
 
 
+			-- CREATE TEST DATA:
+	--INSERT INTO Offering (OfferingCode, StaffID, CourseID, SemesterCode)
+	--	VALUES (1015, 4, 'DMIT221', 'A100')
+	--INSERT INTO Offering (OfferingCode, StaffID, CourseID, SemesterCode)
+	--	VALUES (1016, 4, 'DMIT221', 'A100')
+	--INSERT INTO Offering (OfferingCode, StaffID, CourseID, SemesterCode)
+	--	VALUES (1017, 4, 'DMIT221', 'A100')
+	--INSERT INTO Offering (OfferingCode, StaffID, CourseID, SemesterCode)
+	--	VALUES (1018, 4, 'DMIT221', 'A100')
+	--INSERT INTO Offering (OfferingCode, StaffID, CourseID, SemesterCode)
+	--	VALUES (1019, 4, 'DMIT221', 'A100')
 
-
--- will finish next day
+	-- Challenge:
+	-- Turn these into stored procedures using parameters (the original .doc has the instructions)
