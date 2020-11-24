@@ -189,4 +189,4 @@ ELSE
 		AND CourseName = @CourseName
 	END
 RETURN
-Go
+GO

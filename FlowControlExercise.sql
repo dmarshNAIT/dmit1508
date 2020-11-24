@@ -81,7 +81,8 @@ USE [IQ-School]
 
 	DECLARE @FirstName VARCHAR(30), @LastName VARCHAR(30)
 	-- assign @firstname and @lastname some starting values (test: one that exists (Winnie Woo), one that doesn't)
-	SELECT    @FirstName = 'Winnie'    ,    @LastName = 'Woo'
+	SELECT    @FirstName = 'Winnie'
+    ,    @LastName = 'Woo'
 
 	IF EXISTS (SELECT FirstName, Lastname 
 				FROM Student 
@@ -108,7 +109,9 @@ USE [IQ-School]
 	-- declare a variable called @NumberOfClasses
 	DECLARE @NumberOfClasses SMALLINT
 	-- assign it the number of classes that staff member has taught
-	SELECT @NumberOfClasses = COUNT(*)                          FROM Offering                          WHERE StaffID = @StaffID
+	SELECT @NumberOfClasses = COUNT(*)
+                          FROM Offering
+                          WHERE StaffID = @StaffID
 
 	 IF @NumberOfClasses BETWEEN 0 AND 5
 		BEGIN
