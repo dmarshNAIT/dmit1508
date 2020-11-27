@@ -28,7 +28,6 @@ GO
 SELECT * FROM Club
 EXEC AddClub 'ACM', 'Amazing Chess Masters'
 EXEC AddClub 'ZZZ', 'dgdgdfgdfgdfg'
-EXEC AddClub 'ZZZZZZZZZZZZ', 'dgdgdfgdfgdfg' -- Dana to look into why this works
 
 GO
 
@@ -143,10 +142,12 @@ GO
 -- get @StudentCount
 -- get @CourseCost
 -- if @StudentCount is not greater than @MaxStudents
+	-- BEGIN TRANSACTION
 	-- INSERT
-		-- check if failed
+		-- check if failed (RAISERROR & ROLLBACK)
 	-- UPDATE
-		-- check if failed
+		-- check if failed (RAISERROR & ROLLBACK)
+	-- if both work: COMMIT
 -- otherwise: RAISERROR
 
 
@@ -158,13 +159,34 @@ GO
 -- if it didn't fail: UPDATE
 	-- check if failed
 
---7.	Create a stored procedure called ‘FireStaff’ that will accept a StaffID as a parameter. Fire the staff member by updating the record for that staff and entering todays date as the DateReleased. 
+--7.	Create a stored procedure called ‘FireStaff’ that will accept a StaffID as a parameter. Fire the staff member by updating the record for that staff and entering today's date as the DateReleased. 
 
--- check params
--- see if record exists. if not, raiserror
--- otherwise, UPDATE
--- check if UPDATE worked
-
+CREATE PROCEDURE FireStaff (@StaffID INT = NULL)
+AS
+IF @StaffID IS NULL
+	BEGIN
+	RAISERROR('Must provide staff ID', 16, 1)
+	END
+ELSE
+	BEGIN
+	IF NOT EXISTS (SELECT * FROM Staff WHERE StaffID = @StaffID)
+		BEGIN
+		RAISERROR('That staff does not exist', 16, 1)
+		END
+	ELSE
+		BEGIN
+		UPDATE Staff
+		SET DateReleased = GetDate()
+		WHERE StaffID = @StaffID
+		
+		IF @@ERROR <> 0
+			BEGIN
+			RAISERROR('Firing failed', 16, 1)
+			END
+		END
+	END
+RETURN
+GO
 
 --8.	Create a stored procedure called ‘WithdrawStudent’ that accepts a StudentID, and OfferingCode as parameters. Withdraw the student by updating their Withdrawn value to ‘Y’ and subtract ½ of the cost of the course from their balance. If the result would be a negative balance set it to 0.
 
