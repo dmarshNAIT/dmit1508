@@ -2,6 +2,8 @@
 --(Use IQSchool DB)
 --NOTE: These questions are not in order of increasing difficulty
 
+-- WE WILL REVIEW A SOLUTION TO THESE ON TUESDAY, DEC 8.
+
 --1.	In order to be fair to all students, a student can only belong to a maximum of 3 clubs. Create a trigger to enforce this rule.
 --2.	The Education Board is concerned with rising course costs! Create a trigger to ensure that a course cost does not get increased by more than 20% at any one time.
 --3.	Too many students owe us money and keep registering for more courses! Create a trigger to ensure that a student cannot register for any more courses if they have a balance owing of >$500.
