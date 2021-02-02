@@ -26,6 +26,7 @@ CREATE TABLE EmployeeProject (
 		CONSTRAINT FK_EmployeProjectToProject REFERENCES Project (ProjectNumber)
 ,	WeeklyHours		INT			NOT NULL
 		CONSTRAINT CK_WeeklyHoursMax CHECK (WeeklyHours <= 20)
+		CONSTRAINT DF_WeeklyHours DEFAULT 5
 	-- because this constraint affects MORE than one column, it is listed as a table-level constraint:
 ,	CONSTRAINT PK_EmployeeProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
