@@ -12,6 +12,11 @@ SELECT Amount
 ,	Amount * 0.05 AS GST
 FROM Payment
 
+-- BONUS: if we want to hide the extra decimals, we can change the data type:
+SELECT Amount
+,	CAST(Amount * 0.05 AS DECIMAL(10,2)) AS GST
+FROM Payment
+
 SELECT PaymentID, PaymentDate, Amount, StudentID
 FROM Payment
 WHERE Amount > 1000
