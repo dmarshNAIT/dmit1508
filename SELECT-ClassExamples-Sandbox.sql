@@ -63,9 +63,33 @@ SELECT AVG(Mark) AS AverageMark
 FROM Registration
 WHERE OfferingCode = 1000
 
+SELECT COUNT(DISTINCT OfferingCode) FROM Registration -- 15 offerings
+
+SELECT OfferingCode
+	, AVG(Mark) AS AverageMark
+FROM Registration
+GROUP BY OfferingCode
+
 SELECT COUNT(StaffID) AS NumberOfStaff
 	, COUNT(DateReleased) AS NumberRetired
 	, COUNT(*) AS NumberOfRows
 FROM Staff
 
 SELECT SUM(Amount) AS TotalPayments FROM Payment
+
+-- ALL vs DISTINCT
+
+SELECT FirstName -- defaults to ALL
+FROM Student 
+
+SELECT DISTINCT FirstName -- remove duplicate records
+FROM Student 
+
+SELECT COUNT(*) AS NumberOfRows
+	, COUNT(FirstName) AS NumberOfRecordsWithFirstNames
+	, COUNT(DISTINCT FirstName) AS NumberOfUniqueFirstNames
+FROM Student
+
+SELECT DISTINCT FirstName, LastName
+FROM Student
+ORDER BY FirstName
