@@ -37,3 +37,35 @@ SELECT PaymentID
 , StudentID
 FROM Payment
 WHERE StudentID IN ( 199912010, 200494470 )
+
+-- UNION
+
+SELECT FirstName
+	, LastName
+	, 'Student' AS Type
+	, StudentID AS ID
+FROM Student -- 17 students
+UNION ALL
+SELECT FirstName
+	, LastName
+	, 'Staff'
+	, StaffID
+FROM Staff -- 10 staff
+ORDER BY LastName, FirstName
+
+-- Aggregate Functions
+
+SELECT Mark FROM Registration -- 70 rows
+SELECT AVG(Mark) AS AverageMark 
+, MIN(Mark) AS LowestMark
+, MAX(Mark) AS HighestMark 
+, COUNT(Mark) AS NumberOfMarks
+FROM Registration
+WHERE OfferingCode = 1000
+
+SELECT COUNT(StaffID) AS NumberOfStaff
+	, COUNT(DateReleased) AS NumberRetired
+	, COUNT(*) AS NumberOfRows
+FROM Staff
+
+SELECT SUM(Amount) AS TotalPayments FROM Payment

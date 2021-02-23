@@ -60,7 +60,7 @@ WHERE CourseID LIKE '____1%'
 --11. Select the CourseIDs and Coursenames where the CourseName contains the word 'programming'
 SELECT CourseId, CourseName
 FROM Course
-WHERE CourseName LIKE '%progamming%'
+WHERE CourseName LIKE '%programming%'
 
 --12. Select all the ClubNames who start with N or C.
 SELECT ClubName
@@ -69,9 +69,10 @@ WHERE ClubName LIKE '[NC]%'
 --OR
 SELECT ClubName
 FROM Club
-WHERE ClubName LIKE 'N%' OR ClubName LIKE 'C%'
+WHERE ClubName LIKE 'N%' 
+	OR ClubName LIKE 'C%'
 
---13. Select Student Names, Street Address and City where the lastName has only 3 letters long.
+--13. Select Student Names, Street Address and City where the lastName is only 3 letters long.
 SELECT FirstName + ' ' + LastName AS FullName
 	, StreetAddress
 	, City
