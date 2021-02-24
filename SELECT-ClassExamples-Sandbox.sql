@@ -93,3 +93,30 @@ FROM Student
 SELECT DISTINCT FirstName, LastName
 FROM Student
 ORDER BY FirstName
+
+-- String functions!
+SELECT FirstName
+	, LEN(FirstName) AS LengthOfName
+	, LEFT(FirstName, 2) AS First2Chars
+	, RIGHT(FirstName, 2) AS Last2Chars
+	, SUBSTRING(FirstName, 3, 2) AS MiddleChars 
+		-- starting at char 3, give me 2 chars
+	, REVERSE(FirstName) AS ReverseName
+	, UPPER(FirstName)
+	, LOWER(FirstName)
+FROM Student
+
+-- date functions
+
+SELECT GetDate()
+
+SELECT Birthdate
+	, DATEADD(yy, 18, Birthdate) AS WhenCanTheyVote
+	, DATEADD(mm, 6, Birthdate) AS FirstHalfBirthday
+	, DATEDIFF(yy, Birthdate, GetDate()) AS HowOldAreThey
+	, DateName(mm, Birthdate) AS BirthMonth
+	, DatePart(mm, Birthdate) AS BirthMonth
+	, YEAR(Birthdate)
+	, MONTH(Birthdate)
+	, DAY(Birthdate)
+FROM Student

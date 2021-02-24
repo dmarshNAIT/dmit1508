@@ -38,9 +38,6 @@ FROM PaymentType
 SELECT COUNT(DISTINCT PaymentTypeID) AS NumPaymentTypes
 FROM Payment -- this works as long as we've used all the payment types
 
-SELECT * FROM Payment
-SELECT * FROM PaymentType
-
 --8. How many students are in club 'CSS'?
 SELECT COUNT(*) AS NumStudents
 FROM Activity
