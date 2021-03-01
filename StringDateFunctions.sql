@@ -46,3 +46,10 @@ SELECT FirstName
 FROM Student
 WHERE LEN(FirstName) = 3
 
+
+-- bonus: SQL is language-dependent:
+SET LANGUAGE Italian;  
+SELECT DATENAME(month, GetDate()) AS 'Month Name';  
+  
+SET LANGUAGE us_english;  
+SELECT DATENAME(month, GetDate()) AS 'Month Name' ;  

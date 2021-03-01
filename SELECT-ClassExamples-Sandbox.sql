@@ -120,3 +120,20 @@ SELECT Birthdate
 	, MONTH(Birthdate)
 	, DAY(Birthdate)
 FROM Student
+
+-- JOIN
+SELECT DISTINCT Student.FirstName
+	, Student.LastName
+	, Student.StudentID
+	--, Registration.Mark
+FROM Student -- Student is the parent
+INNER JOIN Registration -- Registation is the child
+	ON Student.StudentID = Registration.StudentID 
+		-- how the tables are related
+
+-- how many students do we have?
+SELECT COUNT(DISTINCT StudentID) FROM Student -- 17 students
+-- how many students have marks?
+SELECT COUNT(DISTINCT StudentID) FROM Registration -- 8 students
+
+-- INNER JOIN returns ONLY records that exist in both tables: so we only see 8 tables in the INNER JOIN between Student and Registration
