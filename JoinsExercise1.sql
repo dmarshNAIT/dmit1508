@@ -66,7 +66,7 @@ WHERE Student.StudentID = 199912010
 --9. What are the Student Names, courseIDs that have Marks >80?
 SELECT Student.FirstName + ' ' + Student.LastName AS StudentFullName
 	, Offering.CourseID
-FROM Student
-INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+FROM Student 
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID 
 INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
 WHERE Registration.Mark > 80
