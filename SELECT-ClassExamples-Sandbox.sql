@@ -137,3 +137,67 @@ SELECT COUNT(DISTINCT StudentID) FROM Student -- 17 students
 SELECT COUNT(DISTINCT StudentID) FROM Registration -- 8 students
 
 -- INNER JOIN returns ONLY records that exist in both tables: so we only see 8 tables in the INNER JOIN between Student and Registration
+
+-- OUTER JOIN returns records in BOTH tables, regardless of whether they are in the other table:
+
+SELECT Student.FirstName
+	, Student.LastName
+	, Student.StudentID
+	, Registration.Mark
+FROM Student -- Student is the parent
+FULL OUTER JOIN Registration -- Registation is the child
+	ON Student.StudentID = Registration.StudentID 
+		-- how the tables are related
+
+-- how many payment types does the school accept?
+SELECT COUNT(DISTINCT PaymentTypeID) AS NumPaymentTypes
+FROM PaymentType
+
+-- how many payment types have been used?
+SELECT COUNT(DISTINCT PaymentTypeID) AS NumPaymentTypes
+FROM Payment
+
+SELECT PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
+	, Payment.Amount
+FROM PaymentType
+INNER JOIN Payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
+
+SELECT PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
+	, Payment.Amount
+FROM PaymentType
+FULL OUTER JOIN Payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
+
+SELECT PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
+	, Payment.Amount
+FROM PaymentType
+LEFT OUTER JOIN Payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
+
+SELECT PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
+	, Payment.Amount
+FROM PaymentType
+RIGHT OUTER JOIN Payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
+
+-- if the parent is first: LEFT JOIN acts like a FULL JOIN (all parent records)
+--							RIGHT JOIN acts like an INNER JOIN (only parents with children)
+
+-- if the CHILD is first: opposite.
+
+SELECT PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
+	, SUM(Payment.Amount) AS TotalAmount
+FROM PaymentType
+LEFT OUTER JOIN Payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
+GROUP BY PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
+
+SELECT PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
+	, ISNULL(SUM(Payment.Amount),0) AS TotalAmount -- BONUS CONTENT
+FROM PaymentType
+LEFT OUTER JOIN Payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
+GROUP BY PaymentType.PaymentTypeID
+	, PaymentType.PaymentTypeDescription
