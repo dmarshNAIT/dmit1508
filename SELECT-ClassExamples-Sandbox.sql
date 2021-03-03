@@ -201,3 +201,47 @@ FROM PaymentType
 LEFT OUTER JOIN Payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
 GROUP BY PaymentType.PaymentTypeID
 	, PaymentType.PaymentTypeDescription
+
+
+-- Subquery
+
+SELECT *
+FROM Staff
+WHERE PositionID = (
+		SELECT PositionID 
+		FROM Position 
+		WHERE PositionDescription = 'Dean'
+)
+
+SELECT *
+FROM Staff
+WHERE PositionID IN (
+		SELECT PositionID 
+		FROM Position 
+)
+
+-- how many students have NEVER made a payment?
+SELECT *
+FROM Student
+WHERE StudentID NOT IN (
+	SELECT StudentID FROM Payment
+)
+
+-- which is the same as:
+SELECT Student.StudentID
+FROM Student
+LEFT OUTER JOIN Payment ON Student.StudentID = Payment.StudentID
+WHERE PaymentID IS NULL
+
+-- SOME, ANY, ALL
+SELECT *
+FROM Registration
+WHERE Mark >= ALL ( -- marks greater than or equal to EVERY mark in the table
+	SELECT Mark FROM Registration
+)
+
+SELECT *
+FROM Registration
+WHERE Mark > SOME ( -- will return everything except the lowest mark
+	SELECT Mark FROM Registration
+)
