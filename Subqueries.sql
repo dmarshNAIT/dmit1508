@@ -20,7 +20,6 @@ FROM Payment
 INNER JOIN PaymentType ON Payment.PaymentTypeID = PaymentType.PaymentTypeID
 WHERE PaymentTypeDescription = 'Cash'
 
-
 --2. Select The Student IDs of all the students that are in the 'Association of Computing Machinery' club
 SELECT StudentID
 FROM Activity
