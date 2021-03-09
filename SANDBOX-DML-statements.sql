@@ -53,12 +53,24 @@ INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
 SELECT *
 FROM StudentMarks
 
+GO
+
+ALTER View StudentMarks
+AS
+SELECT Student.StudentID, Mark
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID 
+
+GO
+
 CREATE View StudentMarksWithEverything
 AS
 SELECT Student.StudentID, Student.FirstName, Student.LastName, Registration.Mark, Offering.CourseID
 FROM Student
 INNER JOIN Registration ON Student.StudentID = Registration.StudentID 
 INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+
+GO
 
 SELECT * 
 FROM StudentMarksWithEverything
