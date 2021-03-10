@@ -12,7 +12,7 @@ FROM Staff
 
 GO
 
---2.	Create a view of staff IDs, full names, positionID's and datehired called staff_confidential.
+--2.	Create a view of staff IDs, full names, positionIDs and datehired called staff_confidential.
 CREATE VIEW staff_confidential
 AS
 SELECT StaffID
@@ -23,7 +23,10 @@ FROM Staff
 
 GO
 
---3.	Create a view of student IDs, full names, courseId's, course names, and grades called student_grades.
+--3.	Create a view of student IDs, full names, courseIDs, course names, and grades called student_grades.
+DROP VIEW student_grades
+GO
+
 CREATE VIEW student_grades
 AS
 
@@ -39,7 +42,6 @@ INNER JOIN Course on Offering.CourseID = Course.CourseId
 
 GO
 
-
 --4.	Use the student_grades view to create a grade report for studentID 199899200 that shows the students ID, full name, course names and marks.
 SELECT StudentID, FullName, CourseName, Mark
 FROM student_grades
@@ -53,9 +55,14 @@ WHERE StudentID = 199912010
 --6.	Using the student_grades view  update the mark for studentID 199899200 in course dmit152 to be 90  and change the coursename to be 'basket weaving 101'.
 UPDATE student_grades
 SET Mark = 90
-	, CourseName = 'Basket Weaving 101'
 WHERE StudentID = 199899200
 	AND CourseId = 'DMIT152'
+
+UPDATE student_grades
+SET CourseName = 'Basket Weaving 101'
+WHERE StudentID = 199899200
+	AND CourseId = 'DMIT152'
+-- because CourseName and Mark are in 2 different tables, we have to UPDATE separately. We can't UPDATE multiple tables in the same statement.
 
 --7.	Using the student_grades view, update the  mark for studentID 199899200 in course dmit152 to be 90.
 UPDATE student_grades

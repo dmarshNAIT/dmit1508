@@ -7,10 +7,10 @@ GO
 --1. Add the following records into the ItemType Table:
 
 --ItemTypeID	ItemTypeDescription
---1	Camera
---2	Lights
+--1		Camera
+--2		Lights
 --3 	Stand
---2	Backdrop
+--2		Backdrop
 --89899985225	Outfit
 --4A	Other
 
@@ -41,7 +41,7 @@ GO
 
 
 --ItemID	ItemDescription	PricePerDay	ItemTypeID
---	Canon G2	25	1
+--	Canon		G2	25	1
 --	100W tungston	18	2
 --	Super Flash	25	4
 --	Canon EOS20D	30	1
@@ -107,7 +107,7 @@ GO
 						
 INSERT INTO Staff (StaffID, StaffFirstName, StaffLastName, Phone, Wage, HireDate, StaffTypeID)
 VALUES (1, 'Joe', 'Cool', '5551223212', 23, 'Jan 1 2021', 1)
---Check constraint on the table says that the hire date must be greater than or equal to todays date
+--Check constraint on the table says that the hire date must be greater than or equal to today's date
 
 INSERT INTO Staff (StaffID, StaffFirstName, StaffLastName, Phone, Wage, HireDate, StaffTypeID)
 VALUES (1, 'Joe', 'Cool', '5551223212', 23, 'Apr 2 2021', 1)

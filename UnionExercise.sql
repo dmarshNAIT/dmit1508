@@ -34,7 +34,7 @@ UNION
 
 SELECT
 	StudentID
-,	'Sudent Born: ' + FirstName + ' ' + LastName AS 'Event:Name'
+,	'Student Born: ' + FirstName + ' ' + LastName
 FROM Student
 WHERE DATENAME(mm, Birthdate) = 'October'
 

@@ -55,7 +55,7 @@ FROM staff
 --•	Update StaffID 12 to have a wage of 80 (note the message displayed)
  
 
- UPDATE Staff
+UPDATE Staff
 SET Wage = 19
 WHERE StaffID = 1
 
