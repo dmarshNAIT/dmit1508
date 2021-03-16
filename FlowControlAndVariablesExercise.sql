@@ -7,9 +7,12 @@ GO
 -- It will accept a clubID as a parameter.
 -- If the count of students in that club is greater than 2 print ‘A successful club!’ . If the count is not greater than 2 print ‘Needs more members!’.
 
+CREATE PROCEDURE StudentClubCount
+AS
+
 -- create a variable called ClubID:
 DECLARE @ClubID VARCHAR(10)
-SET @ClubID = 'CHESS' -- this is where we put our test data
+SET @ClubID = 'ACM' -- this is where we put our test data
 
 -- create another variable to hold the count of students in that Club
 DECLARE @StudentCount INT
@@ -19,7 +22,7 @@ SELECT @StudentCount = COUNT(*)
 		WHERE ClubID = @ClubID
 
 -- if count of students in that Club is > 2: 'Successful Club!'
-IF @StudentCount >= 2
+IF @StudentCount > 2
 	BEGIN
 	PRINT 'Successful club!'
 	END
@@ -29,7 +32,9 @@ ELSE
 	PRINT 'Needs more members!'
 	END
 
--- test: 'ACM' should successful
+RETURN -- end of the procedure
+
+-- test: 'ACM' should be successful
 -- test: 'CHESS' will need more members
 
 --2.	Create a stored procedure called BalanceOrNoBalance. It will accept a studentID as a parameter. 
@@ -37,13 +42,38 @@ ELSE
 --Do Not use the BalanceOwing field in your solution. 
 
 -- create a variable called @StudentID to hold the studentID we're testing
+DECLARE @StudentID INT
+SET @StudentID = 199899200 -- test data go here
 
 -- create a variable called @TotalCost: total of the costs for the courses the student is registered in
+DECLARE @TotalCost DECIMAL(8,2)
+
+SELECT @TotalCost = SUM(CourseCost)
+FROM Registration AS Reg -- adding an alias (bonus content!)
+INNER JOIN Offering ON Reg.OfferingCode = Offering.OfferingCode
+INNER JOIN Course ON Offering.CourseID = Course.CourseId
+WHERE Reg.StudentID = @StudentID
 
 -- create a variable called @TotalPayments: total of the payments that student has made
+DECLARE @TotalPayments DECIMAL(8,2)
+
+SELECT @TotalPayments = SUM(Amount)
+FROM Payment
+WHERE StudentID = @StudentID
+
+-- if we wanted to be thorough about edge cases, we'd add something like:
+-- IF @TotalCost IS NULL OR @TotalPayments IS NULL....
 
 -- if: @TotalCost > @TotalPayments we print 'Balance Owing!'
+IF @TotalCost > @TotalPayments
+	BEGIN
+	PRINT 'Balance owing!'
+	END
 -- else: 'Paid in full. Welcome!'
+ELSE
+	BEGIN
+	PRINT 'Paid in full. Welcome!'
+	END
 
 --3.	Create a stored procedure called ‘DoubleOrNothin’. It will accept a students first name and last name as parameters. 
 -- If the student name already is in the table then print ‘We already have a student with the name firstname lastname!’ Other wise print ‘Welcome firstname lastname!’
