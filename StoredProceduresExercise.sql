@@ -98,7 +98,7 @@ GO
 
 CREATE PROCEDURE StudentPaymentTypes
 AS
-SELECT DISTINCT FirstName + ' ' + LastName AS 'Student'
+SELECT DISTINCT FirstName + ' ' + LastName AS Student
 	, PaymentTypeDescription
 FROM Student
 LEFT JOIN Payment ON Student.StudentID = Payment.StudentID
@@ -111,7 +111,7 @@ GO
 
 ALTER PROCEDURE StudentPaymentTypes
 AS
-SELECT DISTINCT FirstName + ' ' + LastName AS 'Student'
+SELECT DISTINCT FirstName + ' ' + LastName AS Student
 FROM Student
 INNER JOIN Payment ON Student.StudentID = Payment.StudentID
 INNER JOIN PaymentType ON PaymentType.PaymentTypeID = Payment.PaymentTypeID

@@ -6,29 +6,34 @@ GO
 -- It will accept a clubID as a parameter.
 -- If the count of students in that club is greater than 2 print ‘A successful club!’ . If the count is not greater than 2 print ‘Needs more members!’.
 
-CREATE PROCEDURE StudentClubCount
+CREATE PROCEDURE StudentClubCount (@ClubID VARCHAR(10) = NULL)
 AS
 
--- create a variable called ClubID:
-DECLARE @ClubID VARCHAR(10)
-SET @ClubID = 'ACM' -- this is where we put our test data
-
--- create another variable to hold the count of students in that Club
-DECLARE @StudentCount INT
-
-SELECT @StudentCount = COUNT(*) 
-		FROM Activity 
-		WHERE ClubID = @ClubID
-
--- if count of students in that Club is > 2: 'Successful Club!'
-IF @StudentCount > 2
+IF @ClubID IS NULL
 	BEGIN
-	PRINT 'Successful club!'
+	PRINT 'Missing parameter!'
 	END
--- else: print 'Needs more members!'
 ELSE
 	BEGIN
-	PRINT 'Needs more members!'
+
+-- create another variable to hold the count of students in that Club
+	DECLARE @StudentCount INT
+
+	SELECT @StudentCount = COUNT(*) 
+			FROM Activity 
+			WHERE ClubID = @ClubID
+
+	-- if count of students in that Club is > 2: 'Successful Club!'
+	IF @StudentCount > 2
+		BEGIN
+		PRINT 'Successful club!'
+		END
+	-- else: print 'Needs more members!'
+	ELSE
+		BEGIN
+		PRINT 'Needs more members!'
+		END
+
 	END
 
 RETURN -- end of the procedure
