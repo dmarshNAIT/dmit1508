@@ -11,7 +11,7 @@ AS
 
 IF @ClubID IS NULL
 	BEGIN
-	PRINT 'Missing parameter!'
+	RAISERROR ('Missing parameter!', 16, 1)
 	END
 ELSE
 	BEGIN
@@ -41,9 +41,9 @@ RETURN -- end of the procedure
 -- test: 'ACM' should be successful
 -- test: 'CHESS' will need more members
 
-
-
-
+EXEC StudentClubCount 'ACM'
+EXEC StudentClubCount 'CHESS'
+EXEC StudentClubCount
 
 
 
