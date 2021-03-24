@@ -99,9 +99,74 @@ GO
 
 --4.	Create a stored procedure called “LowCourses” to select the course name of the course(s) that have had less than a given number of students in them.
 
+CREATE PROCEDURE LowCourses (@NumStudents INT = NULL) AS
+
+IF @NumStudents IS NULL
+	BEGIN
+	RAISERROR('Missing required parameter', 16, 1)
+	END
+ELSE
+	BEGIN
+
+	SELECT CourseName
+	FROM Course
+	LEFT JOIN Offering on Course.CourseId = Offering.CourseID
+	LEFT JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
+	GROUP BY Course.CourseId, CourseName
+	HAVING COUNT(Registration.StudentID) < @NumStudents
+
+	END
+
+RETURN
+GO
+
+
 --5.	Create a stored procedure called “ListaProvince” to list all the students names that are in a given province.
 
+CREATE PROCEDURE ListAProvince (@Province CHAR(2) = NULL) AS
+
+IF @Province IS NULL
+	BEGIN
+	RAISERROR('Missing required parameter', 16, 1)
+	END
+ELSE
+	BEGIN
+
+	SELECT FirstName, LastName
+	FROM Student
+	WHERE Province = @Province
+
+	END
+
+RETURN
+GO
+
 --6.	Create a stored procedure called “transcript” to select the transcript for a given studentID. Select the StudentID, full name, course IDs, course names, and marks.
+
+CREATE PROCEDURE Transcript (@StudentID INT = NULL) AS
+
+IF @Province IS NULL
+	BEGIN
+	RAISERROR('Missing required parameter', 16, 1)
+	END
+ELSE
+	BEGIN
+
+	SELECT Student.StudentID
+	, Student.FirstName + ' ' + Student.LastName AS FullName
+	, Course.CourseId
+	, Course.CourseName
+	, Mark
+	FROM Student
+	INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+	INNER JOIN Offering on Registration.OfferingCode = Offering.OfferingCode
+	INNER JOIN Course on Offering.CourseID = Course.CourseId
+	WHERE Student.StudentID = @StudentID
+
+	END
+
+RETURN
+GO
 
 --7.	Create a stored procedure called “PaymentTypeCount” to select the count of payments made for a given payment type description. 
 
@@ -132,9 +197,30 @@ EXEC PaymentTypeCount 'Visa'
 -- test with a param that should return nothing:
 EXEC PaymentTypeCount 'Bitcoin'
 
+GO
 
 --8.	Create stored procedure called “Class List” to select student Full names that are in a course for a given semesterCode and Coursename.
 
--- DO THIS ONE?
+CREATE PROCEDURE ClassList (@Semester CHAR(5) = NULL, @CourseName VARCHAR(40) = NULL) AS
+
+IF @Semester IS NULL OR @CourseName IS NULL
+	BEGIN
+	RAISERROR('Missing parameter(s)', 16, 1)
+	END
+ELSE
+	BEGIN
+
+	SELECT Student.FirstName + ' ' + Student.LastName AS FullName
+	FROM Student
+	INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+	INNER JOIN Offering on Registration.OfferingCode = Offering.OfferingCode
+	INNER JOIN Course on Offering.CourseID = Course.CourseId
+	WHERE SemesterCode = @Semester
+		AND CourseName = @CourseName
+
+	END
+
+RETURN
+GO
 
 
