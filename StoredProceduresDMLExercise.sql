@@ -8,7 +8,7 @@ GO
 -- check params aren't missing
 -- check DML didn't fail
 -- check how many records were updated/deleted
-
+-- test plan
 
 
 --1.	Create a stored procedure called ‘AddClub’ to add a new club record.
@@ -46,9 +46,54 @@ EXEC AddClub
 EXEC AddClub 'ACM', 'Awesome Chess Masters'
 
 GO
+
+
+
+
+
 --2.	Create a stored procedure called ‘DeleteClub’ to delete a club record.
 
--- will do live on Wednesday (almost identical to #3)
+CREATE PROCEDURE DeleteClub (@ClubID VARCHAR(10) = NULL)
+AS
+
+IF @ClubID IS NULL-- check if params are missing
+	BEGIN
+	RAISERROR('Missing params', 16, 1)
+	END
+ELSE -- params are NOT missing:
+	BEGIN
+	IF EXISTS (SELECT * FROM Club WHERE ClubID = @ClubID) -- check to see if the record exists.
+		BEGIN
+
+		-- DELETE the club
+		DELETE FROM Club WHERE ClubID = @ClubID 
+
+		-- check if the DELETE worked. if not, RAISERROR:
+		IF @@ERROR <> 0
+			BEGIN
+			RAISERROR('The DELETE failed.', 16, 1)
+			END
+		END -- "the record exists" branch
+	ELSE -- the record does NOT exist
+		BEGIN
+		RAISERROR('That record does not exist.', 16, 1)
+		END
+	END -- "params are not missing" branch
+
+RETURN -- end of the SP
+GO -- end of the batch
+
+-- TEST PLAN:
+-- 1. test with no params
+EXEC DeleteClub
+-- 2. test with a ClubID that does NOT exist
+EXEC DeleteClub 'ABC'
+-- 3. test with a valid ClubID
+EXEC DeleteClub 'AWC'
+-- 4. test with a failed DELETE
+EXEC DeleteClub 'ACM' -- this failed because there are child records in Activity table
+
+GO
 
 --3.	Create a stored procedure called ‘Updateclub’ to update a club record. Do not update the primary key!
 
@@ -129,7 +174,7 @@ ELSE
 				END -- if DELETE branch
 			END -- if exist branch
 		END -- if UPDATE/DELETE branch 
-	IF @@ERROR <> 0
+	IF @@ERROR <> 0 -- a SINGLE branch to test whichever statement we just ran: Insert, Update, OR Delete:
 		BEGIN
 		RAISERROR('operation FAILED!', 16, 1)
 		END 
@@ -154,86 +199,6 @@ GO
 -- otherwise: RAISERROR
 
 
-CREATE PROCEDURE RegisterStudent (
-	@StudentID INT = NULL
-	, @OfferingCode INT = NULL
-	)
-AS
-IF @StudentID IS NULL
-	OR @OfferingCode IS NULL
-BEGIN
-	RAISERROR (
-			'You must provide a studentid and offering code'
-			, 16
-			, 1
-			)
-END
-ELSE
-BEGIN
-	DECLARE @MaxStudents SMALLINT
-	DECLARE @CurrentCount SMALLINT
-	DECLARE @CourseCost MONEY
-
-	SELECT @MaxStudents = MaxStudents
-	FROM Course
-	INNER JOIN Offering ON course.CourseId = offering.CourseID
-	WHERE offeringcode = @offeringcode
-
-	SELECT @CurrentCount = COUNT(*)
-	FROM Registration
-	WHERE OfferingCode = @OfferingCode
-		AND WithdrawYN <> 'Y'
-
-	SELECT @CourseCost = coursecost
-	FROM Course
-	INNER JOIN Offering ON course.CourseId = offering.CourseID
-	WHERE Offering.OfferingCode = @OfferingCode
-
-	IF @MaxStudents = @currentcount
-	BEGIN
-		RAISERROR (
-				'The course is already full'
-				, 16
-				, 1
-				)
-	END
-	ELSE
-	BEGIN
-		INSERT INTO registration (
-			StudentID
-			, OfferingCode
-			)
-		VALUES (
-			@StudentID
-			, @OfferingCode
-			)
-
-		IF @@ERROR <> 0
-		BEGIN
-			RAISERROR (
-					'registration insert failed'
-					, 16
-					, 1
-					)
-		END
-		ELSE
-		BEGIN
-			UPDATE Student
-			SET BalanceOwing = BalanceOwing + @CourseCost
-			WHERE StudentID = @StudentID
-
-			IF @@ERROR <> 0
-			BEGIN
-				RAISERROR (
-						'balance update failed'
-						, 16
-						, 1
-						)
-			END
-		END
-	END
-END
-
 RETURN
 GO
 
@@ -243,69 +208,8 @@ GO
 -- check params. if null, error.
 -- otherwise: INSERT
 	-- check if failed
--- if it didn't fail: UPDATE
-	-- check if failed
-
-CREATE PROCEDURE StudentPayment (
-	@StudentID INT = NULL
-	, @PaymentAmount MONEY = NULL
-	, @PaymentTypeID TINYINT = NULL
-	)
-AS
-IF @StudentID IS NULL
-	OR @PaymentAmount IS NULL
-	OR @PaymentTypeID IS NULL
-BEGIN
-	RAISERROR (
-			'Must provide a studentId, Paymentamount and Payment Type ID'
-			, 16
-			, 1
-			)
-END
-ELSE
-BEGIN
-	INSERT INTO Payment (
-		PaymentDate
-		, Amount
-		, PaymentTypeID
-		, StudentID
-		)
-	VALUES (
-		GETDATE()
-		, @PaymentAmount
-		, @PaymentTypeID
-		, @StudentID
-		)
-
-	IF @@ERROR <> 0
-	BEGIN
-		RAISERROR (
-				'Payment failed'
-				, 16
-				, 1
-				)
-	END
-	ELSE
-	BEGIN
-		--do not need to check for exists since the previous insert would have failed if the
-		--studentid was not a valid student
-		UPDATE Student
-		SET BalanceOwing = BalanceOwing - @PaymentAmount
-		WHERE StudentID = @StudentID
-
-		IF @@ERROR <> 0
-		BEGIN
-			RAISERROR (
-					'Balance update failed'
-					, 16
-					, 1
-					)
-		END
-	END
-END
-
-RETURN
-GO
+	-- if it didn't fail: UPDATE
+		-- check if failed
 
 
 --7.	Create a stored procedure caller ‘FireStaff’ that will accept a StaffID as a parameter. Fire the staff member by updating the record for that staff and entering today's date as the DateReleased. 
@@ -346,95 +250,11 @@ GO
 -- otherwise:
 	-- check there are records to update
 	-- UPDATE
-	-- check if that failed
-	-- UPDATE**
-	-- check if that one failed
-	-- ** add logic to make sure the balance isn't negative
+		-- check if that failed
+		-- UPDATE**
+			-- check if that one failed
+			-- ** add logic to make sure the balance isn't negative
 
-CREATE PROCEDURE WithdrawStudent (
-	@StudentID INT = NULL
-	, @OfferingCode INT = NULL
-	)
-AS
-DECLARE @coursecost DECIMAL(6, 2)
-DECLARE @amount DECIMAL(6, 2)
-DECLARE @balanceowing DECIMAL(6, 2)
-DECLARE @difference DECIMAL(6, 2)
-
-IF @StudentID IS NULL
-	OR @OfferingCode IS NULL
-BEGIN
-	RAISERROR (
-			'You must provide a studentid and OfferingCode'
-			, 16
-			, 1
-			)
-END
-ELSE
-BEGIN
-	IF NOT EXISTS (
-			SELECT *
-			FROM registration
-			WHERE StudentID = @StudentID
-				AND OfferingCode = @OfferingCode
-			)
-	BEGIN
-		RAISERROR (
-				'that student does not exist in that registration'
-				, 16
-				, 1
-				)
-	END
-	ELSE
-	BEGIN
-		UPDATE registration
-		SET WithdrawYN = 'Y'
-		WHERE StudentID = @StudentID
-			AND OfferingCode = @OfferingCode
-
-		IF @@ERROR <> 0
-		BEGIN
-			RAISERROR (
-					'registration update failed'
-					, 16
-					, 1
-					)
-		END
-		ELSE
-		BEGIN
-			SELECT @coursecost = coursecost
-			FROM Course
-			INNER JOIN Offering ON course.CourseId = offering.CourseID
-			WHERE Offering.OfferingCode = @OfferingCode
-
-			SELECT @balanceowing = balanceowing
-			FROM student
-			WHERE StudentID = @studentId
-
-			SELECT @difference = @balanceowing - @coursecost / 2
-
-			IF @difference > 0
-				SET @amount = @difference
-			ELSE
-				SET @amount = 0
-
-			UPDATE Student
-			SET BalanceOwing = @amount
-			WHERE StudentID = @StudentID
-
-			IF @@ERROR <> 0
-			BEGIN
-				RAISERROR (
-						'balance update failed'
-						, 16
-						, 1
-						)
-			END
-		END
-	END
-END
-
-RETURN
 
 
 

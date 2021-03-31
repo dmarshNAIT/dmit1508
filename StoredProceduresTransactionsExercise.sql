@@ -2,106 +2,126 @@
 USE IQSchool
 GO
 
+
+-- CHECKLIST:
+
+-- check params aren't missing
+-- check DML didn't fail
+-- check how many records were updated/deleted
+-- do I need transactions??
+-- what's my test plan?
+
+
+
+
 --1.	Create a stored procedure called ‘RegisterStudentTransaction’ that accepts StudentID and offering code as parameters. If the number of students in that course and semester are not greater than the Max Students for that course, add a record to the Registration table and add the cost of the course to the students balance. If the registration would cause the course in that semester to have greater than MaxStudents for that course raise an error.
 
 
 CREATE PROCEDURE RegisterStudentTransaction (@StudentID INT = NULL, @OfferingCode INT = NULL)
 AS
 
-IF @StudentID IS NULL OR @OfferingCode IS NULL -- check params
+IF @StudentID IS NULL OR @OfferingCode IS NULL -- check if params are missing
 	BEGIN
-	RAISERROR('Must provide required parameters', 16, 1)
+	RAISERROR('Missing params', 16, 1)
 	END
-ELSE -- we have parameters
+ELSE -- if params are NOT missing:
 	BEGIN
-	DECLARE @MaxStudents INT
-	DECLARE @StudentCount INT
-	DECLARE @CourseCost MONEY
 
-	SELECT @MaxStudents = MaxStudents -- get @MaxStudents
-		, @CourseCost = CourseCost -- get @CourseCost
+	DECLARE @StudentCount INT
+	DECLARE @MaxStudents INT
+	DECLARE @CourseCost DECIMAL(6,2)
+
+	SELECT @StudentCount = COUNT(*)
+	FROM Registration
+	WHERE OfferingCode = @OfferingCode AND WithdrawYN <> 'Y'
+
+	SELECT @MaxStudents = MaxStudents
+		, @CourseCost = CourseCost
 	FROM Course
 	INNER JOIN Offering ON Course.CourseId = Offering.CourseID
 	WHERE OfferingCode = @OfferingCode
-	
-	SELECT @StudentCount = COUNT(*) -- get @StudentCount
-	FROM Registration
-	WHERE OfferingCode = @OfferingCode
-		AND WithdrawYN <> 'Y'
-	
-	IF @StudentCount >= @MaxStudents
-		BEGIN
-		RAISERROR('Class is already full', 16, 1)
-		END
-	ELSE -- there is room!
-		BEGIN
-		BEGIN TRANSACTION
-		INSERT INTO Registration (StudentID, OfferingCode)
-		VALUES (@StudentID, @OfferingCode)
 
-		IF @@ERROR <> 0 -- check if INSERT failed 
+	IF @StudentCount < @MaxStudents
+		BEGIN
+		BEGIN TRANSACTION -- because there are more than 1 DML statements to do
+		
+		INSERT INTO Registration (StudentID, OfferingCode) 
+		VALUES (@StudentID, @OfferingCode) -- Add a record to Registration
+
+		IF @@ERROR <> 0 -- If INSERT failed
 			BEGIN
-			RAISERROR('INSERT FAILED!', 16, 1)
+			RAISERROR('The INSERT failed.', 16, 1)
 			ROLLBACK TRANSACTION
-			END 
-		ELSE -- the INSERT worked :)
+			END
+		ELSE -- insert worked!!
 			BEGIN
-			UPDATE Student
-			SET BalanceOwing += @CourseCost
+
+			UPDATE Student -- Update the student's balance
+			SET BalanceOwing = BalanceOwing + @CourseCost
 			WHERE StudentID = @StudentID
-			IF @@ERROR <> 0 -- check if UPDATE failed 
+
+			IF @@ERROR <> 0 -- If UPDATE failed
 				BEGIN
-				RAISERROR('UPDATE FAILED!', 16, 1)
+				RAISERROR('The UPDATE failed.', 16, 1)
 				ROLLBACK TRANSACTION
-				END 
-			ELSE -- the UPDATE worked :)
+				END
+			ELSE -- the UPDATE worked!!
 				BEGIN
 				COMMIT TRANSACTION
-				END 
-			END 
-		END 
+				END
+			END
+		END
+	ELSE --  @StudentCount >= @MaxStudents:
+		BEGIN
+		RAISERROR('Class is full', 16, 1)
+		END
 	END
+
+-- what's my test plan?
+
+
+
 RETURN
 GO
 
---2.	Create a procedure called ‘StudentPaymentTransaction’  that accepts Student ID and paymentamount as parameters. Add the payment to the payment table and adjust the students balance owing to reflect the payment.
+--2.	Create a procedure called ‘StudentPaymentTransaction’  that accepts Student ID and paymentamount as parameters. Add the payment to the payment table and adjust the student's balance owing to reflect the payment.
 
-CREATE PROCEDURE StudentPaymentTransaction (@StudentID INT = NULL, @PaymentAmount MONEY = NULL, @PaymentTypeID TINYINT = NULL)
+CREATE PROCEDURE StudentPaymentTransaction (@StudentID INT = NULL
+											, @PaymentAmount MONEY = NULL
+											, @PaymentTypeID TINYINT = NULL)
 AS
-IF @StudentID IS NULL
-	OR @PaymentAmount IS NULL
-	OR @PaymentTypeID IS NULL
-BEGIN
+IF @StudentID IS NULL OR @PaymentAmount IS NULL OR @PaymentTypeID IS NULL
+	BEGIN
 	RAISERROR ('Must provide a studentId, PaymentAmount and Payment Type ID', 16, 1)
-END
+	END
 ELSE
-BEGIN
+	BEGIN
 	BEGIN TRANSACTION
 
 	INSERT INTO Payment (PaymentDate, Amount, PaymentTypeID, StudentID)
 	VALUES (GETDATE(), @PaymentAmount, @PaymentTypeID, @StudentID)
 
 	IF @@ERROR <> 0
-	BEGIN
+		BEGIN
 		RAISERROR ('Payment failed', 16, 1)
 		ROLLBACK TRANSACTION
-	END
-	ELSE -- insert worked
+		END
+	ELSE -- insert worked!
 		UPDATE Student
 		SET BalanceOwing = BalanceOwing - @PaymentAmount
 		WHERE StudentID = @StudentID
 
 		IF @@ERROR <> 0
-		BEGIN
+			BEGIN
 			RAISERROR ('Balance update failed', 16, 1)
-
 			ROLLBACK TRANSACTION
-		END
-		ELSE -- UPDATE worked
-		BEGIN
+			END
+
+		ELSE -- UPDATE worked!
+			BEGIN
 			COMMIT TRANSACTION
-		END
-END
+			END
+	END
 
 RETURN
 GO
@@ -112,29 +132,29 @@ GO
 
 CREATE PROCEDURE WithdrawStudentTransaction (@StudentID INT = NULL, @OfferingCode INT = NULL)
 AS
+
 DECLARE @coursecost DECIMAL(6, 2)
 DECLARE @amount DECIMAL(6, 2)
 DECLARE @balanceowing DECIMAL(6, 2)
 DECLARE @difference DECIMAL(6, 2)
 
-IF @StudentID IS NULL
-	OR @OfferingCode IS NULL
-BEGIN
+IF @StudentID IS NULL OR @OfferingCode IS NULL
+	BEGIN
 	RAISERROR ('You must provide a studentid and OfferingCode', 16, 1)
-END
+	END
 ELSE
-BEGIN
+	BEGIN
 	IF NOT EXISTS (
 			SELECT *
 			FROM registration
 			WHERE StudentID = @StudentID
 				AND OfferingCode = @OfferingCode
 			)
-	BEGIN
+		BEGIN
 		RAISERROR ('that student does not exist in that registration', 16, 1)
-	END
-	ELSE
-	BEGIN
+		END
+	ELSE -- student DOES exist:
+		BEGIN
 		BEGIN TRANSACTION
 
 		UPDATE registration
@@ -143,13 +163,12 @@ BEGIN
 			AND OfferingCode = @OfferingCode
 
 		IF @@ERROR <> 0
-		BEGIN
+			BEGIN
 			RAISERROR ('registration update failed', 16, 1)
-
 			ROLLBACK TRANSACTION
-		END
+			END
 		ELSE -- update worked
-		BEGIN
+			BEGIN
 			SELECT @coursecost = coursecost
 			FROM Course
 			INNER JOIN Offering ON course.CourseId = offering.CourseID
@@ -171,17 +190,17 @@ BEGIN
 			WHERE StudentID = @StudentID
 
 			IF @@ERROR <> 0
-			BEGIN
+				BEGIN
 				RAISERROR ('balance update failed', 16, 1)
 				ROLLBACK TRANSACTION
-			END
+				END
 			ELSE -- update worked!
-			BEGIN
+				BEGIN
 				COMMIT TRANSACTION
+				END
 			END
 		END
 	END
-END
 
 RETURN
 GO
@@ -192,63 +211,63 @@ GO
 CREATE PROCEDURE DisappearingStudent (@studentID INT = NULL)
 AS
 IF @studentID IS NULL
-BEGIN
+	BEGIN
 	RAISERROR ('You must provide a student ID', 16, 1)
-END
+	END
 ELSE
-BEGIN
+	BEGIN
 	BEGIN TRANSACTION
 
 	DELETE FROM registration
 	WHERE StudentID = @studentID
 
 	IF @@ERROR <> 0
-	BEGIN
+		BEGIN
 		RAISERROR ('Grade delete failed', 16, 1)
 
 		ROLLBACK TRANSACTION
-	END
+		END
 	ELSE -- DELETE worked
-	BEGIN
+		BEGIN
 		DELETE Payment
 		WHERE StudentID = @studentID
 
 		IF @@ERROR <> 0
-		BEGIN
+			BEGIN
 			RAISERROR ('Payment delete failed', 16, 1)
 
 			ROLLBACK TRANSACTION
-		END
+			END
 		ELSE -- delete worked
-		BEGIN
+			BEGIN
 			DELETE Activity
 			WHERE StudentID = @studentID
 
 			IF @@ERROR <> 0
-			BEGIN
+				BEGIN
 				RAISERROR ('Activity delete failed', 16, 1)
 
 				ROLLBACK TRANSACTION
-			END
+				END
 			ELSE -- delete worked
-			BEGIN
+				BEGIN
 				DELETE Student
 				WHERE StudentID = @studentID
 
 				IF @@ERROR <> 0
-				BEGIN
+					BEGIN
 					RAISERROR ('Student delete failed', 16, 1)
 
 					ROLLBACK TRANSACTION
-				END
+					END
 				ELSE
-				BEGIN
+					BEGIN
 					COMMIT TRANSACTION
+					END
 				END
 			END
 		END
 	END
-END
 
 RETURN
 GO
@@ -256,68 +275,73 @@ GO
 
 --5.	Create a stored procedure that will accept a year and will archive all registration records from that year (startdate is that year) from the registration table to an archiveregistration table. Copy all the appropriate records from the registration table to the archiveregistration table and delete them from the registration table. The archiveregistration table will have the same definition as the registration table but will not have any constraints.
 
-
-CREATE TABLE ArchiveRegistration (OfferingCode INT, StudentID INT, Mark DECIMAL(5,2), WithdrawYN CHAR(1))
-
+CREATE TABLE ArchiveRegistration (OfferingCode INT, StudentID INT, Mark DECIMAL(5, 2), WithdrawYN CHAR(1))
+-- creating OUTSIDE of the stored procedure cuz this only happens once.
 GO
+
 
 CREATE PROCEDURE ArchiveRegistrationRecords (@Year CHAR(4) = NULL)
 AS
+
+-- check if params are missing. If so, RAISERROR
+-- if params are NOT missing:
+	-- BEGIN TRANSACTION
+	-- copy records into ArchiveRegistration
+		-- check if INSERT worked. if not, RAISERRROR & ROLLBACK
+		-- if it DID work:
+		-- DELETE FROM Registration
+			-- check if DELETE worked. if not, RAISERROR & ROLLBACK
+			-- if it worked: COMMIT TRANSACTION
+
 IF @Year IS NULL
 	BEGIN
-	RAISERROR ('Must provide year', 16, 1)
+	RAISERROR ('You must provide the year', 16, 1)
 	END
-ELSE
+ELSE -- params are NOT missing
 	BEGIN
-
 	BEGIN TRANSACTION
 
-	INSERT INTO ArchiveRegistration (OfferingCode, StudentID, Mark, WithdrawYN)
+	INSERT INTO ArchiveRegistration (OfferingCode, StudentID, Mark, WithdrawYN) -- copy records into ArchiveRegistration
 	SELECT Offering.OfferingCode, StudentID, Mark, WithdrawYN
-		, StartDate
 	FROM Registration
 	INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
 	INNER JOIN Semester ON Offering.SemesterCode = Semester.SemesterCode
 	WHERE DATEPART(yy, StartDate) = @Year
 
-	IF @@ERROR <> 0 -- check if INSERT failed 
+	IF @@ERROR <> 0 -- If INSERT failed
 		BEGIN
-		RAISERROR('INSERT FAILED!', 16, 1)
+		RAISERROR('The INSERT failed.', 16, 1)
 		ROLLBACK TRANSACTION
-		END 
-	ELSE -- INSERT worked!
+		END
+
+	ELSE -- INSERT worked!!! 
 		BEGIN
 
 		DELETE FROM Registration
 		WHERE OfferingCode IN (
-			SELECT OfferingCode
-			FROM Offering
-			WHERE SemesterCode IN ( -- or use a JOIN
-				SELECT SemesterCode
-				FROM Semester
-				WHERE DATEPART(yy, StartDate) = @Year
-			)
+			-- offering codes that happened that year
+			SELECT OfferingCode FROM Offering WHERE SemesterCode IN (
+				-- a list of semester codes from that year
+				SELECT SemesterCode FROM Semester WHERE DATEPART(yy, StartDate) = @Year
+			) -- we didn't have to use a subquery here: we could use a JOIN instead
 		)
 
-		IF @@ERROR <> 0 -- check if DELETE failed 
+		IF @@ERROR <> 0 -- If DELETE failed
 			BEGIN
-			RAISERROR('DELETE FAILED!', 16, 1)
+			RAISERROR('The DELETE failed.', 16, 1)
 			ROLLBACK TRANSACTION
-			END 
-		ELSE -- DELETE worked!
+			END
+		ELSE -- DELETE worked!!
 			BEGIN
 			COMMIT TRANSACTION
 			END
 		END
 	END
+
+-- what's my test plan?
+
+
+
 RETURN
 GO
-
-
--- CHECKLIST:
-
--- check params aren't missing
--- check DML didn't fail
--- check how many records were updated/deleted
--- do I need transations??
 
