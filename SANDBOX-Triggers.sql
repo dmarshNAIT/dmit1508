@@ -165,3 +165,126 @@ IF @@ROWCOUNT > 0
 	END
 RETURN
 GO
+
+
+-- Q5: Create a trigger that enforces a rule that an Agent cannot represent more than 2 movie characters.
+
+CREATE TRIGGER TR_MovieCharacter_INSERT_UPDATE
+ON MovieCharacter
+FOR INSERT, UPDATE
+AS
+
+IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+	BEGIN
+	IF EXISTS (
+				SELECT *
+				FROM MovieCharacter
+				INNER JOIN inserted ON MovieCharacter.AgentID = inserted.AgentID
+				GROUP BY MovieCharacter.AgentID
+				HAVING COUNT(*) > 2 -- each agent cannot have more than 2 characters, which means cannot have more than 2 records in the MovieCharacter table
+	)
+		BEGIN
+		ROLLBACK TRANSACTION
+		RAISERROR('an Agent cannot represent more than 2 movie characters', 16, 1)
+		END
+	END
+RETURN
+GO
+
+-- testing:
+SELECT * FROM MovieCharacter
+
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, Characterwage, AgentID)
+VALUES  ('Patrick', 'Spongebob', 20, 3)
+
+GO
+
+USE IQSchool
+GO
+
+-- Q6: Create a trigger to Log when changes are made to the CourseCost in the Course table. The changes will be inserted in to the following Logging table:
+
+-- first, create the logging table:
+CREATE TABLE CourseChanges(
+	LogID INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_CourseChanges PRIMARY KEY CLUSTERED
+	,	ChangeDate datetime NOT NULL
+	,	OldCourseCost money NOT NULL
+	,	NewCourseCost money NOT NULL
+	,	CourseID CHAR(7) NOT NULL
+)
+GO
+
+-- then, create the trigger to insert records into that logging table:
+CREATE TRIGGER TR_Course_UPDATE
+ON Course
+FOR UPDATE
+AS
+
+IF @@ROWCOUNT > 0 AND UPDATE(CourseCost)
+	BEGIN
+	INSERT INTO CourseChanges (ChangeDate, OldCourseCost, NewCourseCost, CourseID)
+	SELECT GetDate(), deleted.CourseCost, inserted.CourseCost, inserted.CourseID
+	FROM deleted
+	INNER JOIN inserted ON deleted.CourseId = inserted.CourseId
+	-- if the prompt specified we only log changes where the value changed, we could add
+	-- WHERE inserted.CourseCost != deleted.CourseCost
+	END
+RETURN
+
+GO
+
+
+
+-- Q7: Create a trigger to enforce referential integrity between the Agent and MovieCharacter table.
+
+-- This is a bit of a silly example because FKs already do this for us, but it would make sense if we had separate databases that didn't have FKs defining that relationship.
+-- to "hack" this, we will disable the FK between these tables, and recreate the functionality in a trigger instead.
+
+USE MovieCharacter
+GO
+
+-- first, disable the FK:
+ALTER TABLE MovieCharacter NOCHECK CONSTRAINT fk_MovieCharacterToAgent
+GO
+
+-- then, I need 2 triggers. One on the parent, one on the child.
+
+-- on the child table, I need to make sure that every child has a parent record:
+CREATE TRIGGER TR_MovieCharacter_FK_Child
+ON MovieCharacter
+FOR UPDATE, INSERT
+AS
+
+IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+	BEGIN
+	IF EXISTS (
+			SELECT * FROM inserted
+			WHERE AgentID NOT IN (Select AgentID FROM Agent)
+	
+	) -- if there are records with no valid parent
+		BEGIN
+		ROLLBACK TRANSACTION
+		RAISERROR('this child has no parent :(', 16, 1)
+		END
+	END
+RETURN
+GO
+
+-- on the parent table, I need to make sure I'm not deleting a parent who has a child:
+CREATE TRIGGER TR_MovieCharacter_FK_Parent
+ON Agent
+FOR DELETE
+AS
+IF @@ROWCOUNT > 0
+	BEGIN
+	IF EXISTS (
+		SELECT * FROM deleted
+		INNER JOIN MovieCharacter ON deleted.AgentID = MovieCharacter.AgentID
+	) -- if this parent has 1+ child record
+		BEGIN
+		ROLLBACK TRANSACTION
+		RAISERROR('this parent has children: cannot dropkick', 16, 1)
+		END
+	END
+RETURN
+GO
