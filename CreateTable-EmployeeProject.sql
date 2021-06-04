@@ -23,7 +23,9 @@ CREATE TABLE Project (
 CREATE TABLE EmployeeOnProject (
 	EmployeeID CHAR(11) NOT NULL CONSTRAINT FK_EmployeeOnProjectToEmployee REFERENCES Employee (EmployeeID)
 ,	ProjectNumber INT NOT NULL CONSTRAINT FK_EmployeeOnProjectToProject REFERENCES Project (ProjectNumber)
-,	WeeklyHours SMALLINT NOT NULL
+,	WeeklyHours SMALLINT NOT NULL 
+		CONSTRAINT CK_HoursTwentyOrLess CHECK (WeeklyHours <= 20)
+		CONSTRAINT DF_Hours DEFAULT 5
 ,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
 
