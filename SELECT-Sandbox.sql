@@ -1,3 +1,5 @@
+USE IQSchool
+
 -- selecting specific columns from the Student table
 SELECT FirstName, LastName, City
 FROM Student
@@ -36,6 +38,8 @@ SELECT FirstName, LastName
 FROM Student
 WHERE City != 'Edmonton'
 
+
+
 -- all payments over $1000:
 SELECT PaymentID, Amount
 FROM Payment
@@ -71,4 +75,64 @@ WHERE City IN ('Edmonton', 'Calgary')
 SELECT FirstName, City
 FROM Student
 WHERE City NOT IN ('Edmonton', 'Calgary') -- opposite day
+
+-- more on the LIKE operator
+SELECT 
+	FirstName
+, 	LastName 
+FROM Student
+WHERE FirstName LIKE 'W%'
+-- this does NOT return the same as 
+SELECT 
+	FirstName
+, 	LastName 
+FROM Student
+WHERE FirstName = 'W%' -- because no student has the last name W%
+
+
+-- UNION
+SELECT FirstName, LastName
+FROM Student -- 17 students
+UNION
+SELECT FirstName, LastName
+FROM Staff -- 10 staff
+-- plain old UNION gets rid of duplicates
+
+SELECT FirstName, LastName
+FROM Student -- 17 students
+UNION ALL -- does NOT get rid of duplicates
+SELECT FirstName, LastName
+FROM Staff -- 10 staff
+ORDER BY LastName, FirstName -- optional: how we SORT our results
+
+-- a nonsense query combining numbers:
+SELECT Mark AS ImportantAlias FROM Registration -- 70 rows
+UNION
+SELECT OfferingCode FROM Offering -- 15 rows
+
+-- working with aggregate data
+SELECT AVG(Mark) AS AverageMark
+	, MIN(Mark) AS LowestMark
+	, MAX(Mark) AS HighestMark
+FROM Registration
+
+SELECT SUM(Amount) AS TotalPayments
+FROM Payment
+
+SELECT COUNT(*) AS NumberOfRecords
+, COUNT(DateReleased) AS NumberOfRecordsWhereDateReleasedIsNotNull
+FROM Staff
+
+
+-- group data
+SELECT 
+	StudentID
+,	AVG(Mark) AS AverageMark
+FROM Registration
+GROUP BY StudentID
+
+-- what were the total Payments per student?
+SELECT StudentID, SUM(Amount) AS TotalPayments
+FROM Payment
+GROUP BY StudentID
 
