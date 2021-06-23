@@ -30,6 +30,7 @@ SELECT City, COUNT(*) AS NumberOfStudents
 FROM Student
 GROUP BY City
 
+-- an alternate solution, counting unique identifiers instead of rows:
 SELECT City, COUNT(DISTINCT StudentID) AS NumberOfStudents
 FROM Student
 GROUP BY City
@@ -55,6 +56,7 @@ SELECT ClubID, COUNT(*) AS NumberOfStudents
 FROM Activity
 GROUP BY ClubId -- "in each club"
 
+-- or:
 SELECT ClubID, COUNT(DISTINCT StudentID) AS NumberOfStudents
 FROM Activity
 GROUP BY ClubId -- "in each club"

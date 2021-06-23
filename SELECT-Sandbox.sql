@@ -18,7 +18,7 @@ SELECT Amount
 -- ^ CAST is bonus content / not required to know
 FROM Payment
 
--- a dangerous but useful shortcut
+-- a dangerous but useful shortcut to get ALL the columns without explicitly listing them:
 SELECT *
 FROM Student
 -- this will never be used in a final query, just to quickly explore a table's contents
@@ -37,8 +37,6 @@ WHERE City = 'Edmonton'
 SELECT FirstName, LastName
 FROM Student
 WHERE City != 'Edmonton'
-
-
 
 -- all payments over $1000:
 SELECT PaymentID, Amount
@@ -82,6 +80,7 @@ SELECT
 , 	LastName 
 FROM Student
 WHERE FirstName LIKE 'W%'
+
 -- this does NOT return the same as 
 SELECT 
 	FirstName
@@ -109,6 +108,7 @@ ORDER BY LastName, FirstName -- optional: how we SORT our results
 SELECT Mark AS ImportantAlias FROM Registration -- 70 rows
 UNION
 SELECT OfferingCode FROM Offering -- 15 rows
+-- of the 85 combined rows, there are 24 unique values.
 
 -- working with aggregate data
 SELECT AVG(Mark) AS AverageMark
@@ -123,8 +123,7 @@ SELECT COUNT(*) AS NumberOfRecords
 , COUNT(DateReleased) AS NumberOfRecordsWhereDateReleasedIsNotNull
 FROM Staff
 
-
--- group data
+-- grouping data to get the average mark PER student:
 SELECT 
 	StudentID
 ,	AVG(Mark) AS AverageMark
@@ -136,3 +135,39 @@ SELECT StudentID, SUM(Amount) AS TotalPayments
 FROM Payment
 GROUP BY StudentID
 
+-- string functions:
+SELECT FirstName
+	, LEN(FirstName) AS Length
+	, LEFT(FirstName, 2) AS First2Chars
+	, RIGHT(FirstName, 2) AS Last2Chars
+	, SUBSTRING(FirstName, 2, 3) AS OtherChars -- starting at position 2, return 3 chars
+	, REVERSE(FirstName) AS Reversed
+	, UPPER(FirstName) AS Uppercase
+	, LOWER(FirstName) AS Lowercase
+FROM Student
+-- WHERE LEN(FirstName) = 3
+
+SELECT '      apple     ' AS TestData
+
+SELECT RTRIM(LTRIM('      apple     ')) AS TestDataWithoutWhiteSpace
+
+SELECT TRIM('      apple     ') AS TestDataWithoutWhiteSpaceVersion2
+
+-- date functions
+SELECT BirthDate
+	, YEAR(BirthDate) AS YearBorn
+	, MONTH(Birthdate) AS MonthBorn
+	, DAY(Birthdate) AS DayBorn
+	, DATEPART(qq, Birthdate) AS QuarterBorn
+	, DATEPART(wk, Birthdate) AS WeekBorn
+	, DATEPART(dw, Birthdate) AS DayOfWeekBorn
+	, DATENAME(dw, Birthdate) AS DayOfWeekBorn
+FROM Student
+
+SELECT GetDate() AS CurrentDate
+	, DATENAME(mm, GetDate()) AS CurrentMonth
+
+SELECT BirthDate
+	, DATEDIFF(dd, BirthDate, GetDate()) AS DaysOld
+	, DATEADD(yy, 16, Birthdate) AS SixteenthBirthday
+FROM Student
