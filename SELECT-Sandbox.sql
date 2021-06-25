@@ -171,3 +171,35 @@ SELECT BirthDate
 	, DATEDIFF(dd, BirthDate, GetDate()) AS DaysOld
 	, DATEADD(yy, 16, Birthdate) AS SixteenthBirthday
 FROM Student
+
+
+-- JOINs
+SELECT FirstName, LastName, Mark
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+
+-- how many students are in the Student table?
+SELECT DISTINCT StudentID FROM Student -- 17 students
+
+-- how many students are in the Registration table?
+SELECT DISTINCT StudentID FROM Registration -- 8 students
+
+-- query the number of students who have marks using a JOIN
+SELECT DISTINCT Student.StudentID
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+-- also 8 records: the 8 children & their parents
+
+SELECT DISTINCT Student.StudentID
+FROM Student 
+LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
+-- this is parents whether or not they have children: 17 records
+
+-- LEFT JOINs mean we can have NULL values in the child records:
+SELECT FirstName, LastName, Mark
+FROM Student
+LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
+
+SELECT FirstName, LastName, Mark
+FROM Student
+RIGHT JOIN Registration ON Student.StudentID = Registration.StudentID -- same results as INNER, so we should use INNER JOIN instead
