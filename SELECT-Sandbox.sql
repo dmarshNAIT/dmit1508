@@ -203,3 +203,135 @@ LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
 SELECT FirstName, LastName, Mark
 FROM Student
 RIGHT JOIN Registration ON Student.StudentID = Registration.StudentID -- same results as INNER, so we should use INNER JOIN instead
+
+-- subqueries
+SELECT FirstName, LastName
+FROM Staff
+WHERE PositionID = (
+	SELECT PositionID
+	FROM Position
+	WHERE PositionDescription = 'Dean'
+)
+
+
+SELECT FirstName, LastName
+FROM Staff
+WHERE PositionID IN (
+	SELECT PositionID
+	FROM Position
+	WHERE PositionDescription LIKE '%Dean%' -- contains the word Dean
+)
+--	 = matches exactly to a single value
+--	 LIKE does an approximate match to a single value
+--   IN matches exactly to a list of possible values
+
+SELECT FirstName, LastName
+FROM Staff
+WHERE PositionID NOT IN (
+	SELECT PositionID
+	FROM Position
+	WHERE PositionDescription LIKE '%Dean%' -- contains the word Dean
+)
+
+SELECT StudentID, Mark
+FROM Registration
+WHERE Mark > ANY (SELECT Mark FROM Registration)
+
+SELECT StudentID, Mark
+FROM Registration
+WHERE Mark >= ALL (SELECT Mark FROM Registration)
+
+-- select the City that has the most students in it
+SELECT City, COUNT(*) AS NumberStudents
+FROM Student
+GROUP BY City
+-- Edmonton has the most
+
+SELECT City, COUNT(*) AS NumberStudents
+FROM Student
+GROUP BY City
+HAVING COUNT(*) >= ALL (
+	SELECT COUNT(*)
+	FROM Student
+	GROUP BY City
+)
+
+-- INSERTs
+INSERT INTO Staff (StaffID, FirstName, LastName, DateHired, DateReleased, PositionID, LoginID)
+VALUES (11, 'Maimee', 'Zaraska', 'Jun 29 2021', NULL, 7, NULL)
+
+EXEC sp_help Staff	
+SELECT * FROM Staff
+
+INSERT INTO Staff (StaffID, FirstName, LastName, DateHired, DateReleased, PositionID, LoginID)
+VALUES (12, 'Maimeev2', 'Zaraska', DEFAULT, NULL, (SELECT PositionID FROM Position WHERE PositionDescription = 'Assistant Dean'), NULL)
+
+
+-- UPDATE
+SELECT * FROM Student
+
+UPDATE Student
+SET BalanceOwing = 100
+
+-- do calculations
+UPDATE Student
+SET BalanceOwing = BalanceOwing * 2
+
+-- can also use subqueries
+UPDATE Student
+SET BalanceOwing = (SELECT AVG(Amount) FROM Payment)
+
+-- update only certain records
+UPDATE Student
+SET BalanceOwing = 100
+WHERE City = 'Edmonton'
+
+-- update multiple columns @ once
+UPDATE Student
+SET BalanceOwing = 100
+	, Province = 'BC'
+WHERE City = 'Edmonton'
+
+-- DELETE
+SELECT * FROM Activity
+WHERE ClubID = 'CSS'
+
+DELETE FROM Activity
+WHERE ClubID = 'CSS'
+
+GO
+-- Views
+-- creating a view:
+CREATE VIEW StudentSummary
+AS
+SELECT Student.StudentID
+	, FirstName + ' ' + LastName AS FullName
+	, CourseName
+	, Mark
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+INNER JOIN Course ON Offering.CourseID = Course.CourseId
+
+-- using a view:
+SELECT StudentID, AVG(Mark) AS AverageMark
+FROM StudentSummary
+GROUP BY StudentID
+
+-- change a view:
+ALTER VIEW StudentSummary
+AS
+SELECT Student.StudentID
+	, FirstName + ' ' + LastName AS FullName
+	, Course.CourseID
+	, CourseName
+	, Mark
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+INNER JOIN Course ON Offering.CourseID = Course.CourseId
+
+-- delete a view:
+DROP VIEW StudentSummary
+SELECT * FROM StudentSummary
+EXEC sp_helptext StudentSummary
