@@ -63,23 +63,23 @@ WHERE Offering.StaffID IS NULL
 
 --6. Select the Payment TypeID(s) that have the highest number of Payments made.
 SELECT PaymentTypeID
+	--, COUNT(*) AS NumberPayments -- for testing purposes
 FROM Payment
+-- compare the results from the outer query, and find the one that is bigger than the rest
 GROUP BY PaymentTypeID
 HAVING COUNT(*) >= ALL (
-		SELECT COUNT(*)
-		FROM Payment
-		GROUP BY PaymentTypeID
+	SELECT COUNT(*) FROM Payment GROUP BY PaymentTypeID
 )
+-- I am expecting to see paymentTypeID 4 and 5 with the most
 
 --7. Select the Payment Type Description(s) that have the highest number of Payments made.
 SELECT PaymentTypeDescription
+	--, COUNT(*) AS NumberPayments -- for testing purposes
 FROM Payment
 INNER JOIN PaymentType ON Payment.PaymentTypeID = PaymentType.PaymentTypeID
 GROUP BY PaymentType.PaymentTypeID, PaymentTypeDescription
 HAVING COUNT(*) >= ALL (
-		SELECT COUNT(*)
-		FROM Payment
-		GROUP BY PaymentTypeID
+	SELECT COUNT(*) FROM Payment GROUP BY PaymentTypeID
 )
 
 --8. What is the total avg mark for the students from Edmonton?
@@ -100,17 +100,24 @@ FROM Registration AS Reg
 INNER JOIN Student ON Reg.StudentID = Student.StudentID
 
 --9. What is the avg mark for each of the students from Edmonton? Display their StudentID and avg(mark)
+
+-- get student ID & avg(mark)
 SELECT StudentID, AVG(Mark) AS AverageMark
+-- from Registration
 FROM Registration
+-- where StudentID is in the list of students from Edmonton
 WHERE StudentID IN (
 	SELECT StudentID FROM Student WHERE City = 'Edmonton'
 )
 GROUP BY StudentID
+
+-- a single value with an exact value		 =
+-- multiple values with exact values		 IN
+-- a single value approximately				 LIKE
 
 SELECT Student.StudentID, AVG(Mark) AS AverageMark
 FROM Registration
 INNER JOIN Student on Registration.StudentID = Student.StudentID
 WHERE City = 'Edmonton'
 GROUP BY Student.StudentID
-
 
