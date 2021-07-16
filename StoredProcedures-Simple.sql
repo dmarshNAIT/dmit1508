@@ -52,18 +52,25 @@ GO -- end of the batch
 
 --4.	Create a stored procedure called “NotInDMIT221” that lists the full names of the staff that have not taught DMIT221.
 
-CREATE PROCEDURE NotInDMIT221
-AS
-SELECT FirstName + ' ' + LastName AS 'Staff Name'
+CREATE PROCEDURE NotInDMIT221 AS
+
+SELECT FirstName + ' ' + LastName AS FullName
 FROM Staff
 WHERE StaffID NOT IN (
-		SELECT StaffID
-		FROM Offering
-		WHERE CourseId = 'DMIT221'
-		)
+	SELECT StaffID FROM Offering WHERE CourseID = 'DMIT221'
+)
 
-RETURN
-GO
+RETURN -- end of the SP
+GO -- end of the batch
+
+-- an alternate way to do the query is:
+
+SELECT FirstName + ' ' + LastName AS FullName
+FROM Staff
+LEFT JOIN Offering ON Staff.StaffID = Offering.StaffID
+	AND CourseID = 'DMIT221' -- bonus content!
+WHERE Offering.StaffID IS NULL 
+
 
 
 --5.	Create a stored procedure called “LowNumbers” to select the course name of the course(s) that have had the lowest number of students in it. Assume all courses have registrations.

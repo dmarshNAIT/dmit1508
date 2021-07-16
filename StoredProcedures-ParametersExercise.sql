@@ -128,29 +128,37 @@ GO
 
 CREATE PROCEDURE Transcript (@StudentID INT = NULL) AS
 
-IF @StudentID IS NULL
+-- check param was provided
+IF @StudentID IS NULL -- if not provided, print error message
 	BEGIN
-	PRINT 'Missing parameter'
+	RAISERROR( 'Missing parameter', 16, 1)
 	END
-ELSE
+ELSE -- if we DO have a parameter
 	BEGIN
-
 	SELECT Student.StudentID
-	, Student.FirstName + ' ' + Student.LastName AS FullName
-	, Course.CourseId
-	, Course.CourseName
-	, Mark
+		, FirstName + ' ' + LastName AS FullName
+		, Course.CourseId
+		, CourseName
+		, Mark
 	FROM Student
 	INNER JOIN Registration ON Student.StudentID = Registration.StudentID
-	INNER JOIN Offering on Registration.OfferingCode = Offering.OfferingCode
-	INNER JOIN Course on Offering.CourseID = Course.CourseId
+	INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+	INNER JOIN Course ON Offering.CourseID = Course.CourseId
 	WHERE Student.StudentID = @StudentID
-
 	END
 
-RETURN
-GO
+RETURN -- end of the SP
+GO -- end of the batch
 
+-- test with NO parameters
+EXEC Transcript
+-- test with a "good" parameter
+EXEC Transcript 199899200
+-- test with a "bad" parameter
+EXEC Transcript 99999
+
+
+GO
 
 --7.	Create a stored procedure called “PaymentTypeCount” to select the count of payments made for a given payment type description. 
 
