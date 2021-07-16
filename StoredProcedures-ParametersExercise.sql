@@ -185,25 +185,23 @@ GO -- marks the end of the batch
 
 --8.	Create stored procedure called “Class List” to select student Full names that are in a course for a given semesterCode and Coursename.
 
-CREATE PROCEDURE ClassList (@Semester CHAR(5) = NULL, @CourseName VARCHAR(40) = NULL) AS
+CREATE PROCEDURE ClassList (@SemesterCode CHAR(5) = NULL, @CourseName VARCHAR(40) = NULL) AS
 
-IF @Semester IS NULL OR @CourseName IS NULL
+-- check params aren't missing
+IF @SemesterCode IS NULL OR @CourseName IS NULL
 	BEGIN
-	PRINT 'Missing parameter'
+	RAISERROR('Missing parameter(s)', 16, 1)
 	END
 ELSE
 	BEGIN
-
-	SELECT Student.FirstName + ' ' + Student.LastName AS FullName
+	SELECT FirstName + ' ' + LastName AS StudentName
 	FROM Student
 	INNER JOIN Registration ON Student.StudentID = Registration.StudentID
-	INNER JOIN Offering on Registration.OfferingCode = Offering.OfferingCode
-	INNER JOIN Course on Offering.CourseID = Course.CourseId
-	WHERE SemesterCode = @Semester
-		AND CourseName = @CourseName
-
+	INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+	INNER JOIN Course ON Offering.CourseID = Course.CourseId
+	WHERE SemesterCode = @SemesterCode 
+		AND CourseName = @CourseName 
 	END
 
 RETURN
 GO
-

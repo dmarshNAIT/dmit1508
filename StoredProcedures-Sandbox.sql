@@ -81,3 +81,27 @@ FROM Payment
 RIGHT JOIN PaymentType AS Type ON Payment.PaymentTypeID = Type.PaymentTypeID
 GROUP BY Type.PaymentTypeID, PaymentTypeDescription
 HAVING COUNT(Payment.PaymentID) > 3
+
+
+-- global variables
+-- @@ error:
+INSERT INTO PaymentType (PaymentTypeID, PaymentTypeDescription)
+VALUES (8, 'Churros')
+
+PRINT @@ERROR
+
+-- @@identity:
+USE MemoriesForever
+
+SELECT * FROM Item
+
+INSERT INTO Item (ItemDescription, PricePerDay, ItemTypeID)
+VALUES ('Watch', 100, 3)
+
+PRINT @@identity
+
+-- @@rowcount:
+USE IQSchool
+DELETE FROM PaymentType WHERE PaymentTypeID = 8
+
+PRINT @@rowcount

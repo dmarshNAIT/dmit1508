@@ -71,26 +71,32 @@ LEFT JOIN Offering ON Staff.StaffID = Offering.StaffID
 	AND CourseID = 'DMIT221' -- bonus content!
 WHERE Offering.StaffID IS NULL 
 
+GO
 
 
 --5.	Create a stored procedure called “LowNumbers” to select the course name of the course(s) that have had the lowest number of students in it. Assume all courses have registrations.
 
-CREATE PROCEDURE LowNumbers
-AS
+
+
+CREATE PROCEDURE LowNumbers AS
+
 SELECT CourseName
-FROM Registration
-INNER JOIN Offering ON Offering.OfferingCode = Registration.OfferingCode
-INNER JOIN Course ON Course.CourseId = Offering.CourseID
+	--, COUNT(*) AS NumberStudentRegistrations
+FROM Course
+INNER JOIN Offering ON Course.CourseId = Offering.CourseID
+INNER JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
 GROUP BY Course.CourseId, CourseName
 HAVING COUNT(*) <= ALL (
-		SELECT COUNT(*)
-		FROM Registration
-		INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
-		GROUP BY CourseId
-		)
+	-- number of students per Course
+	SELECT COUNT(*)
+	FROM Registration
+	INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+	GROUP  BY CourseID
+)
 
 RETURN
 GO
+
 
 --6.	Create a stored procedure called “Provinces” to list all the students provinces.
 
