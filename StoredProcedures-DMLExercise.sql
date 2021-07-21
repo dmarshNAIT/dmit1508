@@ -1,10 +1,89 @@
 --Stored Procedures – DML exercise
 --For this exercise you will need a local copy of the IQSchool database. 
+USE IQSchool
+GO
+
 --1.	Create a stored procedure called ‘AddClub’ to add a new club record.
 -- params: @ClubID, @ClubName
 
+CREATE PROCEDURE AddClub (@ClubID VARCHAR(10) = NULL, @ClubName VARCHAR(50) = NULL)
+AS
+
+-- check for missing params
+IF @ClubID IS NULL OR @ClubName IS NULL
+	BEGIN
+	RAISERROR('Missing parameter(s)', 16, 1)
+	END
+ELSE
+	BEGIN
+	-- add club record to Club table
+	INSERT INTO Club (ClubID, ClubName)
+	VALUES (@ClubID, @ClubName)
+
+	-- check if INSERT worked / check @@error
+	IF @@ERROR <> 0
+		BEGIN
+		RAISERROR('Oh no! The INSERT failed!', 16, 1)
+		END -- end of the "if error" branch
+	END -- end of the "params aren't missing" branch
+
+RETURN -- end of the procedure
+GO -- end of the batch
+
+
+SELECT * FROM Club
+
+-- test with "good" params / test the INSERT worked
+EXEC AddClub 'CC', 'Churros Club'
+
+-- test with "bad" params / test the INSERT did NOT work
+EXEC AddClub 'CC', 'Churros Consortium' -- duplicate PK
+
+-- test with missing params
+EXEC AddClub
+
+GO
+
 --2.	Create a stored procedure called ‘DeleteClub’ to delete a club record.
 -- param: @ClubID
+
+CREATE PROCEDURE DeleteClub (@ClubID VARCHAR(10) = NULL)
+AS
+
+-- check params were provided:
+IF @ClubID IS NULL
+	BEGIN
+	RAISERROR('Missing parameter', 16, 1)
+	END
+ELSE -- params WERE provided:
+	BEGIN
+	-- check if that record exists:
+	IF EXISTS (	SELECT * FROM Club WHERE ClubID = @ClubID )
+		BEGIN
+		-- DELETE that Club:
+		DELETE FROM Club WHERE ClubId = @ClubID
+		-- check whether the DELETE worked:
+		IF @@ERROR <> 0
+			BEGIN
+			RAISERROR('Oh no! The DELETE failed!', 16, 1)
+			END -- end of the "if error" branch
+		END
+	ELSE -- that record does NOT exist
+		BEGIN
+		RAISERROR('That Club does not exist', 16, 1)
+		END
+	END
+
+RETURN
+GO
+
+-- TEST PLAN:
+-- 1: test with "good params": a Club that IS in the table
+-- 2: test with "bad" params: a Club that has a child record in the Activity table
+-- 3: test with a Club that's not in the Club table
+-- 4: test with missing parameters
+
+
 
 --3.	Create a stored procedure called ‘Updateclub’ to update a club record. Do not update the primary key!
 -- params: @ClubID, @NewClubName
