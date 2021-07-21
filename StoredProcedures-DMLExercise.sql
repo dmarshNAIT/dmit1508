@@ -201,13 +201,114 @@ GO
 		-- check if failed (RAISERROR)
 -- otherwise: RAISERROR
 
---6.	Create a procedure called ‘StudentPayment’ that accepts Student ID, paymentamount, and paymentTypeID as parameters. Add the payment to the payment table and adjust the students balance owing to reflect the payment. 
+-- sample solution follows:
+CREATE PROCEDURE RegisterStudent (@StudentID INT = NULL, @OfferingCode INT = NULL)
+AS
+-- variables: @NumberStudents, @MaxStudents, @CourseCost
+
+IF @StudentID IS NULL OR @OfferingCode IS NULL -- check params
+	BEGIN
+	RAISERROR('Missing param(s)', 16, 1)
+	END
+ELSE -- we DO have params
+	BEGIN
+
+	DECLARE @NumberStudents INT
+	DECLARE @MaxStudents SMALLINT
+	DECLARE @CourseCost DECIMAL(6,2)
+
+	SELECT @NumberStudents = COUNT(*)
+	FROM Registration
+	WHERE OfferingCode = @OfferingCode AND WithdrawYN <> 'Y'
+
+	SELECT @MaxStudents = MaxStudents
+		, @CourseCost = CourseCost
+	FROM Course
+	INNER JOIN Offering ON Course.CourseId = Offering.CourseID
+	WHERE OfferingCode = @OfferingCode
+
+	IF @NumberStudents < @MaxStudents
+		BEGIN
+
+		INSERT INTO Registration (OfferingCode, StudentID)
+		VALUES (@OfferingCode, @StudentID)
+
+		IF @@ERROR <> 0 -- the INSERT failed :(
+			BEGIN
+			RAISERROR('Error adding student to Registration table', 16, 1)
+			END
+		ELSE -- the INSERT worked :)
+			BEGIN
+
+			UPDATE Student
+			SET BalanceOwing = BalanceOwing + @CourseCost
+			WHERE StudentID = @StudentID
+
+			IF @@ERROR <> 0
+				BEGIN
+				RAISERROR('Error updating balance owing', 16, 1)
+				END
+			END
+		END
+	ELSE -- @NumberStudents >= @MaxStudents
+		BEGIN
+		RAISERROR('Sorry, class is full', 16, 1)
+		END
+	END
+
+RETURN
+GO
+
+-- what is our test plan?
+
+
+--6.	Create a procedure called ‘StudentPayment’ that accepts Student ID, paymentamount, and paymentTypeID as parameters. Add the payment to the payment table and adjust the student's balance owing to reflect the payment. 
 
 -- check params. if null, ERROR
 -- otherwise: INSERT into Payment
 	-- check if it failed. if so, RAISERROR
 	-- otherwise: UPDATE BalanceOwing
 		-- check if that failed. if so, RAISERROR
+
+-- sample solution follows:
+CREATE PROCEDURE StudentPayment (@StudentID INT = NULL
+								, @PaymentAmount MONEY = NULL
+								, @PaymentTypeID TINYINT = NULL)
+AS
+IF @StudentID IS NULL OR @PaymentAmount IS NULL OR @PaymentTypeID IS NULL
+	BEGIN
+	RAISERROR('Missing param(s)', 16, 1)
+	END
+ELSE -- we DO have paramaters
+	BEGIN
+
+	DECLARE @PaymentID INT
+	SELECT @PaymentID = MAX(PaymentID) + 1 FROM Payment
+
+	INSERT INTO Payment(PaymentID, PaymentDate, Amount, PaymentTypeID, StudentID)
+	VALUES (@PaymentID, GetDate(), @PaymentAmount, @PaymentTypeID, @StudentID)
+
+	IF @@ERROR <> 0 -- the INSERT failed :(
+		BEGIN
+		RAISERROR('Error adding Payment', 16, 1)
+		END
+	ELSE -- the INSERT worked :)
+		BEGIN
+		
+		UPDATE Student
+		SET BalanceOwing = BalanceOwing - @PaymentAmount
+		WHERE StudentID = @StudentID
+
+		IF @@ERROR <> 0
+			BEGIN
+			RAISERROR('Error updating balance owing', 16, 1)
+			END
+		END
+	END
+RETURN
+GO
+
+-- test plan??
 
 --7.	Create a stored procedure called ‘FireStaff’ that will accept a StaffID as a parameter. Fire the staff member by updating the record for that staff and entering today's date as the DateReleased. 
 
@@ -216,13 +317,118 @@ GO
 	-- otherwise: UPDATE Staff SET DateReleased = ?
 	-- check if UPDATE worked. if not, RAISERROR
 
+-- sample solution follows:
+CREATE PROCEDURE FireStaff (@StaffID INT = NULL)
+AS
+IF @StaffID IS NULL
+	BEGIN
+	RAISERROR('StaffID is required', 16, 1)
+	END
+ELSE -- we DO have params:
+	BEGIN
+	IF NOT EXISTS (SELECT * FROM Staff WHERE StaffID = @StaffID)
+		BEGIN
+		RAISERROR('That Staff member does not work here', 16, 1)
+		END
+	ELSE -- the Staff member DOES exist
+		BEGIN
+
+		UPDATE Staff
+		SET DateReleased = GetDate()
+		WHERE StaffID = @StaffID
+
+		IF @@ERROR <> 0
+			BEGIN
+			RAISERROR('Staff member could not be let go', 16, 1)
+			END
+		END
+	END
+RETURN
+GO
+
+-- test plan??
+
 --8.	Create a stored procedure called ‘WithdrawStudent’ that accepts a StudentID, and OfferingCode as parameters. Withdraw the student by updating their Withdrawn value to ‘Y’ and subtract ½ of the cost of the course from their balance. If the result would be a negative balance set it to 0.
 
 -- check params. if null, error.
 -- otherwise:
 	-- check there are records to update
-	-- UPDATE
+	-- UPDATE WithDrawn value
 		-- check if that failed
-		-- UPDATE**
+		-- UPDATE BalanceOwing **
 			-- check if that one failed
 			-- ** add logic to make sure the balance isn't negative
+
+CREATE PROCEDURE WithdrawStudent (@StudentID INT = NULL, @OfferingCode INT = NULL)
+AS
+
+IF @StudentID IS NULL OR @OfferingCode IS NULL
+	BEGIN
+	RAISERROR('Missing params', 16, 1)
+	END
+ELSE -- the params WERE provided
+	BEGIN
+
+	IF NOT EXISTS (	SELECT * 
+					FROM Registration 
+					WHERE StudentID = @StudentID 
+						AND OfferingCode = @OfferingCode) 
+					-- does Student have this record in the Reg table?
+		BEGIN
+		RAISERROR('That student is not registered for this course', 16, 1)
+		END
+	ELSE -- the student IS registered
+		BEGIN
+
+		-- UPDATE WithDrawn value
+		UPDATE Registration
+		SET WithdrawYN = 'Y'
+		WHERE StudentID = @StudentID 
+			AND OfferingCode = @OfferingCode
+
+		-- check if UPDATE worked:
+		IF @@ERROR <> 0
+			BEGIN
+			RAISERROR('Student could not be withdrawn', 16, 1)
+			END
+		ELSE -- the UPDATE did work
+			BEGIN
+
+			-- create a helper variable:
+			DECLARE @CourseCost DECIMAL(6,2)
+
+			SELECT @CourseCost = CourseCost
+			FROM Course
+			INNER JOIN Offering ON Course.CourseId = Offering.CourseID
+			WHERE OfferingCode = @OfferingCode
+
+			DECLARE @NewBalanceOwing MONEY
+
+			SELECT @NewBalanceOwing = BalanceOwing - (@CourseCost / 2)
+			FROM Student
+			WHERE StudentID = @StudentID
+
+			IF @NewBalanceOwing < 0 
+				BEGIN
+				SET @NewBalanceOwing = 0 
+				END
+
+			UPDATE Student
+			SET BalanceOwing = @NewBalanceOwing
+			WHERE StudentID = @StudentID
+
+			IF @@ERROR <> 0
+				BEGIN
+				RAISERROR('Error updating Balance Owing', 16, 1)
+				END
+			END
+		END
+	END
+RETURN
+GO
+
+-- test!
+-- missing params
+-- good params (a student who CAN be withdrawn and has a > 0 balance)
+-- good params (a student who CAN be withdrawn and has a < 0 balance)
+-- bad params (a student who is not Registered)
