@@ -1,3 +1,5 @@
+USE IQSchool
+
 -- variables
 
 -- creating a variable:
@@ -105,3 +107,63 @@ USE IQSchool
 DELETE FROM PaymentType WHERE PaymentTypeID = 8
 
 PRINT @@rowcount
+
+-- creating then altering a procedure
+GO
+
+CREATE PROCEDURE SimpleSP AS
+SELECT FirstName, LastName FROM Student
+RETURN
+
+GO
+
+EXEC SimpleSP
+
+GO
+
+ALTER PROCEDURE SimpleSP AS
+SELECT FirstName + ' ' + LastName AS FullName
+FROM Student
+RETURN
+
+GO
+
+EXEC SimpleSP
+
+-- viewing the definition of an existing SP:
+EXEC sp_helptext SimpleSP
+
+------ TRANSACTIONS ------
+
+
+-- first, an example using ROLLBACK:
+BEGIN TRANSACTION -- creating our starting point 
+
+SELECT * FROM Registration
+DELETE FROM Registration -- deleting ALL the records
+SELECT * FROM Registration
+
+ROLLBACK TRANSACTION -- takes us back to what the db looked like @ the start
+SELECT * FROM Registration
+
+-- now, an example using COMMIT
+
+USE quiz2
+BEGIN TRANSACTION
+
+SELECT * FROM ClubMembership
+DELETE FROM ClubMembership
+
+COMMIT TRANSACTION
+SELECT * FROM ClubMembership
+
+-- putting this together with DML:
+
+-- BEGIN TRANSACTION
+-- INSERT INTO Registration ...
+-- check @@error
+	-- if it didn't work: ROLLBACK TRANSACTION & RAISERROR
+	-- if it worked: UPDATE Student ...
+			-- check @@error
+				-- if it worked: COMMIT TRANSACTION
+				-- if the UPDATE failed: RAISERROR & ROLLBACK
