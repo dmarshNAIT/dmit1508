@@ -167,3 +167,92 @@ SELECT * FROM ClubMembership
 			-- check @@error
 				-- if it worked: COMMIT TRANSACTION
 				-- if the UPDATE failed: RAISERROR & ROLLBACK
+
+
+
+-- review of SP:
+
+GO
+-- 4.	Create a stored procedure called ‘DisappearingStudent’ that accepts a studentID as a parameter and deletes all records pertaining to that student. It should look like that student was never in IQSchool! 
+
+CREATE PROCEDURE DisappearingStudent (@StudentID INT = NULL)
+
+AS
+
+IF @StudentID IS NULL -- parameter is missing
+	BEGIN
+	RAISERROR('Student ID is required', 16, 1)
+	END
+
+ELSE -- param IS NOT missing
+	BEGIN
+
+	-- make sure that student exists:
+	IF NOT EXISTS (SELECT * FROM Student WHERE StudentID = @StudentID) -- the student does NOT exist
+		BEGIN
+		RAISERROR('That student does not exist', 16, 1)
+		END
+
+	ELSE -- the student does exist
+		BEGIN
+
+		BEGIN TRANSACTION
+
+		DELETE FROM Registration WHERE StudentID = @StudentID
+		IF @@ERROR <> 0 -- the Registration delete FAILED
+			BEGIN
+			RAISERROR('Error deleting from Registration table', 16, 1)
+			ROLLBACK TRANSACTION
+			END
+
+		ELSE -- that DELETE worked
+			BEGIN
+			DELETE FROM Activity WHERE StudentID = @StudentID
+			IF @@ERROR <> 0 -- the Activity delete FAILED
+				BEGIN
+				RAISERROR('Error deleting from Activity table', 16, 1)
+				ROLLBACK TRANSACTION
+				END
+
+			ELSE -- the Activity DELETE worked!
+				BEGIN
+				DELETE FROM Payment WHERE STudentID = @StudentID
+				IF @@ERROR <> 0 -- the Payment delete FAILED
+					BEGIN
+					RAISERROR('Error deleting from Payment table', 16, 1)
+					ROLLBACK TRANSACTION
+					END
+
+				ELSE -- the Payment delete worked
+					BEGIN
+
+					DELETE FROM Student WHERE StudentID = @StudentID
+					IF @@ERROR <> 0 -- the Student delete FAILED
+						BEGIN
+						RAISERROR('Error deleting from Student table', 16, 1)
+						ROLLBACK TRANSACTION
+						END
+
+					ELSE -- the student delete worked!!
+						BEGIN
+						COMMIT TRANSACTION
+						END
+
+					END
+				END
+			END
+		END
+	END
+
+
+RETURN
+
+GO
+
+-- test case 1: test with NO parameters
+EXEC DisappearingStudent
+-- test with BAD params: test EACH DELETE statements: test with a student that doesn't exist
+EXEC DisappearingStudent 111
+-- test with GOOD params: all 4 DELETEs worked
+EXEC DisappearingStudent 200578400
+SELECT * FROM Student
