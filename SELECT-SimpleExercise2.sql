@@ -33,13 +33,13 @@ FROM Payment
 
 --7. How many different payment types does the school accept?
 Select COUNT(PaymentTypeID) AS 'Total Number of Types of Payment' from PaymentType
-
+-- or
 SELECT COUNT(*) AS NumberofPaymentType
 FROM PaymentType
 
 -- if we wanted to know how many different payment types have been used:
 SELECT DISTINCT (PAYMENTTYPEID) FROM Payment -- 6 rows
-
+-- or
 SELECT COUNT(DISTINCT PaymentTypeID) AS NumberOfPaymentTypes
 FROM Payment
 
