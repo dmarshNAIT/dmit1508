@@ -118,3 +118,46 @@ SELECT Birthdate
 	, DATENAME(mm, Birthdate) AS MonthBorn -- name of the month
 	, DATEPART(mm, Birthdate) AS MonthBorn -- # of the month
 FROM Student
+
+--------------------------- String functions ---------------------------
+SELECT FirstName
+	, LEN(FirstName) AS Length
+	, LEFT(FirstName, 2) AS First2Letters
+	, RIGHT(FirstName, 2) AS Last2Letters
+	, SUBSTRING(FirstName, 2, 3) AS LettersInMiddle -- starting at char 2, select 3 chars
+	, REVERSE(FirstName) AS ReversedName
+	, UPPER(FirstName) AS Uppercase
+	, LOWER(FirstName) AS Lowercase
+FROM Student
+
+SELECT '      apple     ' AS TestData
+SELECT RTRIM(LTRIM('      apple     ')) AS TestDataNoSpaces
+
+--------------------------- JOINs ---------------------------
+
+SELECT FirstName, LastName, Mark
+FROM Student 
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+
+SELECT COUNT(*) FROM Student -- 17 students
+SELECT COUNT(*) FROM Registration -- 70 records
+
+SELECT COUNT(DISTINCT StudentID) FROM Registration -- 8 students in the registration table
+
+-- INNER JOINs only return records that exist in BOTH tables
+-- INNER JOINs only return parent records that have child records
+
+-- what if I want to see all the parent records, even those without child records?
+-- LEFT OUTER JOIN will be used if the parent table is on the LEFT; it's the first table
+-- RIGHT OUTER JOIN if the parent table is on the RIGHT; it's the 2nd table
+
+SELECT FirstName, LastName, Mark
+FROM Student 
+LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
+
+-- what if I want data from more than 2 tables?
+SELECT FirstName, LastName, Mark, CourseName
+FROM Student 
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+INNER JOIN Course ON Offering.CourseID = Course.CourseId

@@ -11,7 +11,6 @@
 --4. Select the Names of all the students born in December.
 
 
-------------------------- STOP HERE -----------------------
 
 --5. select last three characters of all the courses
 
