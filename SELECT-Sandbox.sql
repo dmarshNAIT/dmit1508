@@ -161,3 +161,33 @@ FROM Student
 INNER JOIN Registration ON Student.StudentID = Registration.StudentID
 INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
 INNER JOIN Course ON Offering.CourseID = Course.CourseId
+
+-- do we have any students that do NOT have payments?
+-- how many students do we have in the student table?
+SELECT COUNT(DISTINCT StudentID) AS StudentCount FROM Student -- 17
+-- how many students do we have in the payments table?
+SELECT COUNT(DISTINCT StudentID) AS StudentCount FROM Payment -- 7
+
+-- let's join these 2 tables using an INNER JOIN
+SELECT Student.StudentID, FirstName, LastName, SUM(Amount) AS TotalPayments
+FROM Student
+INNER JOIN Payment ON Student.StudentID = Payment.StudentID
+GROUP BY Student.StudentID, FirstName, LastName
+
+-- what if it's an OUTER JOIN?
+SELECT Student.StudentID, FirstName, LastName, SUM(Amount) AS TotalPayments
+FROM Student
+LEFT JOIN Payment ON Student.StudentID = Payment.StudentID
+GROUP BY Student.StudentID, FirstName, LastName
+-- OR:
+SELECT Student.StudentID, FirstName, LastName, SUM(Amount) AS TotalPayments
+FROM Payment
+RIGHT JOIN Student ON Student.StudentID = Payment.StudentID
+GROUP BY Student.StudentID, FirstName, LastName
+
+-- what if the tables we want data from aren't directly connected?
+SELECT FirstName, LastName, CourseName
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+INNER JOIN Course ON Offering.CourseID = Course.CourseId
