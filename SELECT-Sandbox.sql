@@ -130,11 +130,12 @@ SELECT FirstName
 	, LOWER(FirstName) AS Lowercase
 FROM Student
 
+-- trim functions strips out whitespace (spaces, tabs) at the start or end of a field:
 SELECT '      apple     ' AS TestData
 SELECT RTRIM(LTRIM('      apple     ')) AS TestDataNoSpaces
 
 --------------------------- JOINs ---------------------------
-
+-- what if we want data from 2 different tables?
 SELECT FirstName, LastName, Mark
 FROM Student 
 INNER JOIN Registration ON Student.StudentID = Registration.StudentID
@@ -151,6 +152,7 @@ SELECT COUNT(DISTINCT StudentID) FROM Registration -- 8 students in the registra
 -- LEFT OUTER JOIN will be used if the parent table is on the LEFT; it's the first table
 -- RIGHT OUTER JOIN if the parent table is on the RIGHT; it's the 2nd table
 
+-- this gives me students, regardless of whether they have records in the Registration table:
 SELECT FirstName, LastName, Mark
 FROM Student 
 LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
@@ -184,6 +186,7 @@ SELECT Student.StudentID, FirstName, LastName, SUM(Amount) AS TotalPayments
 FROM Payment
 RIGHT JOIN Student ON Student.StudentID = Payment.StudentID
 GROUP BY Student.StudentID, FirstName, LastName
+-- both of these show me students, even those without Payments
 
 -- what if the tables we want data from aren't directly connected?
 SELECT FirstName, LastName, CourseName
@@ -191,3 +194,65 @@ FROM Student
 INNER JOIN Registration ON Student.StudentID = Registration.StudentID
 INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
 INNER JOIN Course ON Offering.CourseID = Course.CourseId
+-- we follow the connections through intermediate tables.
+
+---------------------- Subqueries ----------------------
+SELECT FirstName, LastName
+FROM Staff
+WHERE PositionID = (
+	-- first, the inner query runs, and the results of this query are used in the filter in my outer query.
+	SELECT PositionID
+	FROM Position
+	WHERE PositionDescription = 'Dean'
+	-- then, the outer query runs.
+)
+
+-- = matches exactly to a single value
+-- IN matches exactly to a list of possible values
+-- LIKE does an approximate match to a single value
+
+SELECT FirstName, LastName
+FROM Staff
+WHERE PositionID IN (
+	-- this subquery can return multiple values, so we connect using IN
+	SELECT PositionID
+	FROM Position
+	WHERE PositionDescription LIKE '%Dean%'
+
+)
+
+-- the ANY keyword lets us compare to any of the individual results returned by the inner query.
+SELECT StudentID
+FROM Registration
+WHERE Mark > ANY (SELECT Mark FROM Registration)
+
+-- the ALL keyword lets us to compare to EVERY single individual result returned by the inner query.
+SELECT StudentID
+FROM Registration
+WHERE Mark > ALL (SELECT Mark FROM Registration)
+
+-- it can also help us answer questions like:
+-- which city has the most students in it?
+SELECT City, COUNT(*) AS NumberStudents
+FROM Student
+GROUP BY City
+HAVING COUNT(*) >= ALL (
+			-- # of students per city:
+			SELECT COUNT(*) AS NumberStudents
+			FROM Student
+			GROUP BY City
+)
+
+-- BONUS CONTENT: doing the same query without the ALL keyword
+SELECT City, COUNT(*) AS NumberStudents
+FROM Student
+GROUP BY City
+HAVING COUNT(*) = (
+	SELECT MAX(NumberStudents) AS Largest 
+	FROM (
+			SELECT COUNT(*) AS NumberStudents
+			FROM Student
+			GROUP BY City 
+	) AS bob -- a name for the results of the subquery
+)
+

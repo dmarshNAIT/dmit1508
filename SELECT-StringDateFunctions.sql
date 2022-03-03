@@ -11,12 +11,14 @@ SELECT DATEDIFF(dy, DateHired, DateReleased) AS NumberOfDays
 FROM Staff
 WHERE FirstName = 'Tess' AND LastName = 'Agonor'
 
---3. How Many Students where born in each month? Display the Month Name and the Number of Students.
+--3. How Many Students were born in each month? Display the Month Name and the Number of Students.
 SELECT DATENAME(mm, Birthdate)	AS BirthMonth
 	, COUNT(*)					AS NumberOfStudents
 FROM Student
 GROUP BY DATENAME(mm, Birthdate)
 -- challenge: how to sort these chronologically?
+	, DATEPART(mm, Birthdate)
+ORDER BY DATEPART(mm, Birthdate)
 
 --4. Select the Names of all the students born in December.
 SELECT FirstName + ' ' + LastName AS StudentName
@@ -38,7 +40,7 @@ SELECT RIGHT(CourseName, 3) AS Last3Chars
 FROM Course
 
 --6. Select the characters in the position description from characters 8 to 13 for PositionID 5
-SELECT SUBSTRING(PositionDescription, 8, 6) AS Substring
+SELECT SUBSTRING(PositionDescription, 8, 6) AS Substring -- starting at position 8, show me 6 characters (in other words, characters 8, 9, 10, 11, 12, and 13)
 FROM Position
 WHERE PositionID = 5
 
