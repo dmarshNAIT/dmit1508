@@ -14,3 +14,11 @@ WHERE ItemTypeID < 3
 -- delete records with "a" in the description
 DELETE FROM ItemType
 WHERE ItemTypeDescription LIKE '%a%'
+
+-- adding to an existing value
+-- e.g. I want to add $5 to each student's balance owing
+USE IQSchool
+GO
+
+UPDATE Student
+SET BalanceOwing = BalanceOwing + 5
