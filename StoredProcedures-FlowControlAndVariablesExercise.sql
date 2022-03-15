@@ -6,6 +6,7 @@ GO
 
 -- 1. If the count of students in a club is greater than 2 print ‘A successful club!’ . If the count is not greater than 2 print ‘Needs more members!’.
 
+-- pick a Club to test
 -- create a variable called @studentCount
 -- check its value, then print the appropriate message
 
