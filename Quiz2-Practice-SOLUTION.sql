@@ -128,3 +128,35 @@ WHERE staffid NOT IN (
 		FROM offering
 		)
 
+-- 11 - Oops, we forgot something. Assuming the table already contains data, add a new column to the Student table called Major. This will contain the subject each student is studying, if they have selected one.
+ALTER TABLE Student
+ADD Major VARCHAR(30) NULL
+
+-- 12. Create indexes for each FK in the database.
+CREATE NONCLUSTERED INDEX IX_Payment_StudentID ON Payment(StudentID)
+CREATE NONCLUSTERED INDEX IX_Payment_PaymentTypeID ON Payment(PaymentTypeID)
+CREATE NONCLUSTERED INDEX IX_Registration_StudentID ON Registration(StudentID)
+CREATE NONCLUSTERED INDEX IX_Registration_OfferingCode ON Registration(OfferingCode)
+CREATE NONCLUSTERED INDEX IX_Activity_StudentID ON Activity(StudentID)
+CREATE NONCLUSTERED INDEX IX_Activity_ClubID ON Activity(ClubID)
+CREATE NONCLUSTERED INDEX IX_Offering_StaffID ON Offering(StaffID)
+CREATE NONCLUSTERED INDEX IX_Offering_CourseID ON Offering(CourseID)
+CREATE NONCLUSTERED INDEX IX_Offering_SemesterCode ON Offering(SemesterCode)
+CREATE NONCLUSTERED INDEX IX_Staff_PositionID ON Staff(PositionID)
+
+-- 13. Modify the CREATE TABLE statements for IQ School to add the following constraints:
+-- a) the PositionDescription must be at least 4 characters long.
+-- this would be added to line 19 of the IQ School creation script:
+CONSTRAINT CK_PositionDescription CHECK (LEN(PositionDescription) >= 4) 
+
+-- b) the default value for PositionID on a new Staff is 4.
+-- this would be added to line 77
+CONSTRAINT DF_PositionOfStaff DEFAULT 4
+
+-- c) The ClubName cannot contain any numbers.
+-- added to line 27:
+CONSTRAINT CK_ClubName CHECK (ClubName NOT LIKE '%[0-9]%')
+
+-- d) The default ClubName is 'Unknown'.
+-- added to line 27:
+CONSTRAINT DF_ClubName DEFAULT 'Unknown'
