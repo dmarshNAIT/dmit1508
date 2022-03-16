@@ -13,7 +13,7 @@ GO
 --2. Each course has a cost. If the total of the costs for the courses a given student is registered in is more than the total of the payments that student has made then print ‘balance owing !’ otherwise print ‘Paid in full! Welcome to School 158!’
 --Do Not use the BalanceOwing field in your solution. 
 
--- create a variable to hold the @StudentID
+-- create a variable to hold a @StudentID
 -- create a variable called @TotalCourseCost, and assign it a value for a specific student
 -- create a variable called @TotalPayments, and assign it a value for a specific student
 -- compare variables, and print the appropriate message
