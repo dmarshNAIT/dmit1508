@@ -4,6 +4,7 @@ GO
 ------------------ variables ----------------------------
 -- create a variable:
 DECLARE @FirstName VARCHAR(40)
+
 -- give the variable a value
 -- "assigning" a value to the variable
 SET @FirstName = 'Bob'
