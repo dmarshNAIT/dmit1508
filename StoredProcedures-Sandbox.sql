@@ -50,10 +50,58 @@ ELSE
 	PRINT 'That staff does NOT exist'
 	END
 
+-------------------- stored procedures -------------------------
+GO -- batch terminator: marks the END of a batch
 
+CREATE PROCEDURE SillyProcedure AS
+SELECT DISTINCT FirstName FROM Student
+RETURN -- end of the SP
 
+-- execute that procedure:
+EXEC SillyProcedure
 
+-- get the definition of an existing SP:
+EXEC sp_helptext SillyProcedure
 
+-- what if I want to CHANGE an existing SP?
+GO
+
+ALTER PROCEDURE SillyProcedure AS
+SELECT DISTINCT FirstName + ' ' + LastName AS FullName FROM Student
+RETURN 
+
+-- how to delete an existing sp?
+DROP PROCEDURE SillyProcedure
+GO
+
+-- create a procedure with parameters
+
+CREATE PROCEDURE LookupStudent (@StudentID INT = NULL) AS -- beginning of the SP
+
+IF @StudentID IS NULL
+	BEGIN
+		RAISERROR('Missing Student ID, which is a required parameter.', 16, 1)
+	END
+ELSE
+	BEGIN
+		SELECT StudentID, FirstName, LastName, Birthdate
+		FROM Student
+		WHERE StudentID = @StudentID
+	END
+
+RETURN -- end o the SP
+GO
+
+EXEC LookupStudent 999999999
+
+-- can we execute with a variable as the parameter value?
+DECLARE @SomeVariable INT
+SET @SomeVariable = 198933540
+
+EXEC LookupStudent @SomeVariable
+
+-- what happens if the parameter is the wrong data type?
+EXEC LookupStudent 'Bob'
 
 
 
