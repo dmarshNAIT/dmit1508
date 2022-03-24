@@ -4,13 +4,13 @@ USE IQSchool
 GO
 
 
--- 1. If the count of students in a club is greater than 2 print ‘A successful club!’ . If the count is not greater than 2 print ‘Needs more members!’.
+-- 1. Create a stored procedure called StudentClubCount. It will accept a clubID as a parameter. If the count of students in that club is greater than 2 print ‘A successful club!’ . If the count is not greater than 2 print ‘Needs more members!’.
 
 -- pick a Club to test
 -- create a variable called @studentCount
 -- check its value, then print the appropriate message
 
---2. Each course has a cost. If the total of the costs for the courses a given student is registered in is more than the total of the payments that student has made then print ‘balance owing !’ otherwise print ‘Paid in full! Welcome to School 158!’
+--2. Create a stored procedure called BalanceOrNoBalance. It will accept a studentID as a parameter. Each course has a cost. If the total of the costs for the courses the student is registered in is more than the total of the payments that student has made then print ‘balance owing !’ otherwise print ‘Paid in full! Welcome to School 158!’
 --Do Not use the BalanceOwing field in your solution. 
 
 -- create a variable to hold a @StudentID
@@ -18,37 +18,35 @@ GO
 -- create a variable called @TotalPayments, and assign it a value for a specific student
 -- compare variables, and print the appropriate message
 
---3. Create variables for student @firstName and student @lastName. If that student name already is in the table then print ‘We already have a student with the name firstname lastname!’ Otherwise print ‘Welcome firstname lastname!’
+--3. Create a stored procedure called ‘DoubleOrNothin’. It will accept a students first name and last name as parameters. If the student name already is in the table then print ‘We already have a student with the name firstname lastname!’ Other wise print ‘Welcome firstname lastname!’
 
-CREATE PROCEDURE WelcomeStudent AS --- beginning of my SP
-
--- create variables for the first and last name
-DECLARE @FirstName VARCHAR(25)
-	, @LastName VARCHAR(35)
-
--- assign values to each
-SELECT @FirstName = 'Winnie'
-	, @LastName = 'Woo'
-
--- check if that student EXISTS already, and print the appropriate message
-
-IF EXISTS (
-	SELECT * FROM Student WHERE FirstName = @FirstName AND LastName = @LastName
-)
+CREATE PROCEDURE DoubleOrNothin (@FirstName VARCHAR(25) = NULL
+							, @LastName VARCHAR(35) = NULL) AS --- beginning of my SP
+IF @FirstName IS NULL OR @LastName IS NULL
 	BEGIN
-		PRINT 'Sorry, we already have a student with that name.'
+	RAISERROR('Missing required parameter(s)', 16, 1)
 	END
 
-ELSE -- if the student does NOT exist
+ELSE -- all parameters have been provided
 	BEGIN
-		PRINT 'Welcome to our school, ' + @FirstName + ' ' + @LastName + '!'
-	END
+		-- check if that student EXISTS already, and print the appropriate message
+		IF EXISTS (
+			SELECT * FROM Student WHERE FirstName = @FirstName AND LastName = @LastName
+		)
+			BEGIN
+				PRINT 'Sorry, we already have a student with that name.'
+			END
 
+		ELSE -- if the student does NOT exist
+			BEGIN
+				PRINT 'Welcome to our school, ' + @FirstName + ' ' + @LastName + '!'
+			END
+	END
 RETURN -- end of the procedure
 
-EXEC WelcomeStudent 
+EXEC DoubleOrNothin 'sdfsdfsdfsdf', 'Woo' -- execute the stored procedure called "WelcomeStudent"
 
---4. Create a variable to hold a @staffID. If the number of classes the staff member has ever taught is between 0 and 2 print ‘Well done!’, if it is between 3 and 5 print ‘Exceptional effort!’, if the number is greater than 5 print ‘Totally Awesome Dude!’
+--4. Create a procedure called ‘StaffRewards’. It will accept a staff ID as a parameter.  If the number of classes the staff member has ever taught is between 0 and 2 print ‘Well done!’, if it is between 3 and 5 print ‘Exceptional effort!’, if the number is greater than 5 print ‘Totally Awesome Dude!’
 
 -- create variable(s)
 DECLARE @StaffID SMALLINT
