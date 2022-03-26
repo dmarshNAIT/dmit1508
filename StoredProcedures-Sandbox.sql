@@ -103,6 +103,27 @@ EXEC LookupStudent @SomeVariable
 -- what happens if the parameter is the wrong data type?
 EXEC LookupStudent 'Bob'
 
+----------------- global variables -----------------------
+INSERT INTO Staff (StaffID, FirstName, LastName, DateHired, DateReleased, PositionID, LoginID)
+VALUES (4, 'Bob', 'Smith', GetDate(), NULL, 1, NULL)
+
+PRINT @@error
+
+DELETE FROM Staff WHERE FirstName = 'Dana'
+PRINT @@rowcount
+
+USE MemoriesForever
+GO
+
+INSERT INTO Item (ItemDescription, PricePerDay, ItemTypeID)
+VALUES ('sflsdl', 50, 1)
+PRINT @@identity
+
+GO
+
+
+
+
 
 
 
