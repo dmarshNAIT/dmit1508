@@ -121,6 +121,34 @@ PRINT @@identity
 
 GO
 
+------------------- transactions ------------------------------
+
+-- first, an example using ROLLBACK:
+-- create our checkpoint:
+BEGIN TRANSACTION
+
+SELECT * FROM Payment
+DELETE FROM Payment
+SELECT * FROM Payment
+
+ROLLBACK TRANSACTION -- take us back to what the db looked like at the start
+SELECT * FROM Payment
+
+-- now, an example using COMMIT
+BEGIN TRANSACTION
+
+SELECT * FROM Payment
+DELETE FROM Payment
+SELECT * FROM Payment
+
+COMMIT TRANSACTION -- make those changes permanent
+SELECT * FROM Payment
+
+
+
+
+
+
 
 
 
