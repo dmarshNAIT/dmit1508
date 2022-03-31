@@ -160,5 +160,8 @@ DECLARE @subtotalv2 MONEY
 SET @subtotalv2 = 80.50
 PRINT '$' + CAST(@subtotalv2 as VARCHAR)
 
--- do any types of SQL have something like an array?
+-- Q: do any types of SQL have something like an array?
+-- A: no, we can use temp tables for this.
+
 -- is there something like LET?
+--  not to my knowledge.
