@@ -144,6 +144,18 @@ SELECT * FROM Payment
 COMMIT TRANSACTION -- make those changes permanent
 SELECT * FROM Payment
 
+-- revisiting global variables
+USE Lab3
+GO
+
+exec sp_help StaffType
+
+INSERT INTO StaffType (StaffTypeDescription)
+VALUES ('Test Description')
+
+SELECT @@identity AS IdentityValue
+
+SELECT * FROM StaffType
 
 
 

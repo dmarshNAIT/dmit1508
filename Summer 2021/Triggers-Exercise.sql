@@ -99,7 +99,7 @@ VALUES (1014, 198933540, 99, 'N') -- balance owing $1000+
 
 SELECT * FROM Registration WHERE StudentID = 198933540
 
---4.	Our school DBA has suddenly become allergic to Foreign Key constraints and has disabled them in the database! Create a trigger on the Registration table to ensure that only valid StudentID’s and offeringcode’s are used for registration records. Try and have the trigger raise an error for each foreign key that is not valid. If you have trouble with this question create the trigger so it just checks for a valid student ID.
+--4.	Our school DBA has suddenly become allergic to Foreign Key constraints and has disabled them in the database! Create a trigger on the Registration table to ensure that only valid StudentIDs and offeringcodes are used for registration records. Try and have the trigger raise an error for each foreign key that is not valid. If you have trouble with this question create the trigger so it just checks for a valid student ID.
 
 -- not realistic, but in here just for kicks:
 
