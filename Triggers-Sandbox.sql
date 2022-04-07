@@ -76,4 +76,100 @@ IF @@ROWCOUNT > 0 AND UPDATE(CharacterWage)
 RETURN
 GO
 
--- test on Wednesday
+-- UPDATE: zero rows
+UPDATE MovieCharacter SET Characterwage = 1000 WHERE CharacterID = 999
+
+-- UPDATE: 1 row: error
+UPDATE MovieCharacter SET Characterwage = -10 WHERE CharacterID = 1
+
+-- INSERT: many rows:  success
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating,Characterwage, AgentID)
+VALUES ('C3PO', 'Star Wars', 4, 500, 3)
+	, ('Darth Vader', 'Star Wars', 1, 5000, 2)
+GO
+
+
+--- practice Q #3:
+-- create a trigger to enforce a rule that an AgentFee cannot be updated by MORE than 100%
+CREATE TRIGGER TR_PracticeQ_3
+	ON Agent
+	FOR UPDATE
+AS
+
+-- check to see if the trigger needs to run
+IF @@ROWCOUNT > 0 AND UPDATE(AgentFee)
+	BEGIN
+
+	-- look at the old value for Agent Fee: deleted.AgentFee
+	-- compare to the new value of Agent Fee: inserted.AgentFee
+	-- if new value > (old value + old value): RAISERROR & ROLLBACK
+	-- or: new value > (2 * old value)
+	IF EXISTS (
+		SELECT *
+		FROM inserted
+		INNER JOIN deleted ON inserted.AgentID = deleted.AgentID
+		WHERE inserted.AgentFee > (2 * deleted.AgentFee)
+	) -- the rule has been broken :(
+		BEGIN
+		RAISERROR('That is too much, man', 16, 1)
+		ROLLBACK TRANSACTION
+		END
+
+	END
+RETURN
+GO
+
+-- test
+-- UPDATE 0 records: nothing should happen
+SELECT * FROM Agent
+UPDATE Agent SET AgentFee = 55 WHERE AgentID = 999
+
+-- UPDATE 1 record successfully
+UPDATE Agent SET AgentFee = 55 WHERE AgentID = 1
+
+-- UPDATE many records: unsuccessfully
+UPDATE Agent SET AgentFee = 200 WHERE AgentName LIKE '%a%'
+
+
+-- Practice Q #6:
+-- createa a trigger to log when changes are made to the CourseCost in the Course table
+
+USE IQSchool
+GO
+
+-- first, create the logging table:
+CREATE TABLE CourseChanges(
+	LogID INT IDENTITY(1,1) NOT NULL CONSTRAINT pk_CourseChanges PRIMARY KEY CLUSTERED
+	,	ChangeDate datetime NOT NULL
+	,	OldCourseCost money NOT NULL
+	,	NewCourseCost money NOT NULL
+	,	CourseID CHAR(7) NOT NULL
+)
+GO
+
+-- then, create a trigger that INSERTs into the logging table:
+CREATE TRIGGER TR_PracticeQ6
+ON Course
+FOR UPDATE
+AS
+
+-- check to see if the trigger needs to run
+IF @@ROWCOUNT > 0 AND UPDATE(CourseCost)
+	BEGIN
+
+	-- insert into loggging table
+	INSERT INTO CourseChanges (ChangeDate, OldCourseCost, NewCourseCost, CourseID)
+	SELECT GetDate(), deleted.CourseCost, inserted.CourseCost, inserted.CourseID
+	FROM inserted
+	INNER JOIN deleted ON inserted.CourseId = deleted.CourseId
+	WHERE inserted.CourseCost != deleted.CourseCost
+
+	END
+RETURN
+GO
+
+-- test:
+SELECT * FROM Course
+UPDATE Course SET CourseCost = 500 WHERE MaxStudents = 4
+
+SELECT * FROM CourseChanges
