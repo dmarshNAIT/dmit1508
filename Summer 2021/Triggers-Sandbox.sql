@@ -188,7 +188,7 @@ IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
 	IF EXISTS (
 		SELECT *
 		FROM MovieCharacter
-		INNER JOIN inserted ON MovieCharacter.CharacterID = inserted.CharacterID
+		INNER JOIN inserted ON MovieCharacter.AgentID = inserted.AgentID
 		GROUP BY MovieCharacter.AgentID
 		HAVING COUNT(*) > 2
 	)

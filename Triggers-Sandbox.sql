@@ -129,10 +129,65 @@ UPDATE Agent SET AgentFee = 55 WHERE AgentID = 1
 
 -- UPDATE many records: unsuccessfully
 UPDATE Agent SET AgentFee = 200 WHERE AgentName LIKE '%a%'
+GO
 
+-- Practice Q #4
+-- movie characters cannot be deleted if their agent's fee is >= 50
+
+CREATE TRIGGER TR_PracticeQ4
+ON MovieCharacter
+FOR DELETE
+AS
+
+-- make sure at least 1 character was deleted
+IF @@ROWCOUNT > 0
+	BEGIN
+		-- check if any deleted records have an agent whose fee is >=50
+		IF EXISTS (
+			SELECT *
+			FROM deleted
+			INNER JOIN Agent ON deleted.AgentID = Agent.AgentID
+			WHERE AgentFee >= 50
+		)
+		-- if so: 
+			BEGIN
+			ROLLBACK TRANSACTION
+			RAISERROR('Cannot delete: agent makes too much money', 16, 1)
+			END
+	END
+RETURN
+GO
+
+-- practice Q #5:
+-- Create a trigger that enforces a rule that an Agent cannot represent more than 2 movie characters.
+
+CREATE TRIGGER TR_PracticeQ5
+ON MovieCharacter
+FOR INSERT, UPDATE
+AS
+
+-- check to see if the trigger needs to run
+IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+	BEGIN
+	-- check to see if the rule was broken
+	IF EXISTS (
+		SELECT *
+		FROM MovieCharacter
+		INNER JOIN inserted ON inserted.AgentID = MovieCharacter.AgentID -- because we want to connect the new characters to the existing characters with the same agent
+		GROUP BY MovieCharacter.AgentID
+		HAVING COUNT(*) > 2 -- counting the # of rows = # of characters
+	)
+		-- if so, RAISERROR & ROLLBACK
+		BEGIN
+			RAISERROR('Sorry, that agent is busy', 16, 1)
+			ROLLBACK TRANSACTION
+		END
+	END
+RETURN
+GO
 
 -- Practice Q #6:
--- createa a trigger to log when changes are made to the CourseCost in the Course table
+-- create a trigger to log when changes are made to the CourseCost in the Course table
 
 USE IQSchool
 GO
@@ -162,7 +217,7 @@ IF @@ROWCOUNT > 0 AND UPDATE(CourseCost)
 	SELECT GetDate(), deleted.CourseCost, inserted.CourseCost, inserted.CourseID
 	FROM inserted
 	INNER JOIN deleted ON inserted.CourseId = deleted.CourseId
-	WHERE inserted.CourseCost != deleted.CourseCost
+	WHERE inserted.CourseCost != deleted.CourseCost -- we only want to log CHANGES to the cost
 
 	END
 RETURN
@@ -173,3 +228,57 @@ SELECT * FROM Course
 UPDATE Course SET CourseCost = 500 WHERE MaxStudents = 4
 
 SELECT * FROM CourseChanges
+
+-- Q7: Create a trigger to enforce referential integrity between the Agent and MovieCharacter table.
+
+-- This is a bit of a silly example because FKs already do this for us, but it would make sense if we had separate databases that didn't have FKs defining that relationship.
+-- to "hack" this, we will disable the FK between these tables, and recreate the functionality in a trigger instead.
+
+USE MovieCharacter
+GO
+
+-- first, disable the FK:
+ALTER TABLE MovieCharacter NOCHECK CONSTRAINT fk_MovieCharacterToAgent
+GO
+
+-- then, I need 2 triggers. One on the parent, one on the child.
+
+-- on the child table, I need to make sure that every child has a parent record:
+CREATE TRIGGER TR_MovieCharacter_FK_Child
+ON MovieCharacter
+FOR UPDATE, INSERT
+AS
+
+IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+	BEGIN
+	IF EXISTS (
+			SELECT * FROM inserted
+			WHERE AgentID NOT IN (Select AgentID FROM Agent)
+	
+	) -- if there are records with no valid parent
+		BEGIN
+		ROLLBACK TRANSACTION
+		RAISERROR('this child has no parent :(', 16, 1)
+		END
+	END
+RETURN
+GO
+
+-- on the parent table, I need to make sure I'm not deleting a parent who has a child:
+CREATE TRIGGER TR_MovieCharacter_FK_Parent
+ON Agent
+FOR DELETE
+AS
+IF @@ROWCOUNT > 0
+	BEGIN
+	IF EXISTS (
+		SELECT * FROM deleted
+		INNER JOIN MovieCharacter ON deleted.AgentID = MovieCharacter.AgentID
+	) -- if this parent has 1+ child record
+		BEGIN
+		ROLLBACK TRANSACTION
+		RAISERROR('this parent has children: cannot dropkick', 16, 1)
+		END
+	END
+RETURN
+GO
