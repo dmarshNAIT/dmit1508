@@ -205,6 +205,7 @@ IF @@ROWCOUNT > 0 AND UPDATE(BalanceOwing)
 	INSERT INTO BalanceOwingLog (StudentID, ChangeDate, OldBalance, NewBalance)
 	SELECT inserted.StudentID, GetDate(), deleted.BalanceOwing, inserted.BalanceOwing
 	FROM inserted INNER JOIN deleted on inserted.StudentID = deleted.StudentID
+	WHERE deleted.BalanceOwing != inserted.BalanceOwing
 	END
 RETURN
 GO
