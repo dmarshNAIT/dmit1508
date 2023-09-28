@@ -1,26 +1,31 @@
 
 -- drop the old versions of the tables
-DROP TABLE Project
+DROP TABLE IF EXISTS EmployeeOnProject
+DROP TABLE IF EXISTS Project
+DROP TABLE IF EXISTS Employee
 
 -- create the Employee table
 CREATE TABLE Employee (
-	EmployeeID	CHAR(11)		NOT NULL
+	EmployeeID	CHAR(11)		NOT NULL	CONSTRAINT PK_Employee PRIMARY KEY CLUSTERED
 ,	LastName	VARCHAR(100)	NOT NULL
 ,	FirstName	VARCHAR(100)	NOT NULL
 )
 
--- create the associative entity
-CREATE TABLE EmployeeOnProject (
-	EmployeeID		CHAR(11)	NOT NULL
-,	ProjectNumber	INT			NOT NULL
-,	WeeklyHours		INT			NOT NULL
-)
-
 -- create the Project table
 CREATE TABLE Project (
-	ProjectNumber	INT	IDENTITY(1,1)	NOT NULL
+	ProjectNumber	INT	IDENTITY(1,1)	NOT NULL	CONSTRAINT PK_Project PRIMARY KEY CLUSTERED
 ,	ProjectName		VARCHAR(255)		NOT NULL
 ,	ProjectLocation	VARCHAR(100)		NOT NULL
+)
+
+-- create the associative entity
+CREATE TABLE EmployeeOnProject (
+	EmployeeID		CHAR(11)	NOT NULL	
+		CONSTRAINT FK_EmployeeOnProjectToEmployee REFERENCES Employee (EmployeeID)
+,	ProjectNumber	INT			NOT NULL
+	-- insert the missing FK constraint
+,	WeeklyHours		INT			NOT NULL
+,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
 
 -- list our table definitions
