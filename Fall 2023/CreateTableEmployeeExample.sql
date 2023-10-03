@@ -23,7 +23,7 @@ CREATE TABLE EmployeeOnProject (
 	EmployeeID		CHAR(11)	NOT NULL	
 		CONSTRAINT FK_EmployeeOnProjectToEmployee REFERENCES Employee (EmployeeID)
 ,	ProjectNumber	INT			NOT NULL
-	-- insert the missing FK constraint
+		CONSTRAINT FK_EmployeeOnProjectToProject REFERENCES Project (ProjectNumber)
 ,	WeeklyHours		INT			NOT NULL
 ,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
