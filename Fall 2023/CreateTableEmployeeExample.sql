@@ -24,7 +24,7 @@ CREATE TABLE EmployeeOnProject (
 		CONSTRAINT FK_EmployeeOnProjectToEmployee REFERENCES Employee (EmployeeID)
 ,	ProjectNumber	INT			NOT NULL
 		CONSTRAINT FK_EmployeeOnProjectToProject REFERENCES Project (ProjectNumber)
-,	WeeklyHours		INT			NOT NULL
+,	WeeklyHours		INT			NOT NULL CONSTRAINT DF_WeeklyHours DEFAULT 5.0
 ,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
 
@@ -32,3 +32,4 @@ CREATE TABLE EmployeeOnProject (
 EXEC sp_help Employee
 EXEC sp_help EmployeeOnProject
 EXEC sp_help Project
+
