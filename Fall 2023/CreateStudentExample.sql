@@ -1,37 +1,46 @@
 -- CREATE TABLES
 
 CREATE TABLE Student (
-	StudentID			INT			NOT NULL
-,	StudentFirstName	VARCHAR(40)	NOT NULL
+	StudentID			INT			NOT NULL	CONSTRAINT PK_Student PRIMARY KEY CLUSTERED
+,	StudentFirstName	VARCHAR(40)	NOT NULL 
 ,	StudentLastName		VARCHAR(40)	NOT NULL
-,	GenderCode			CHAR(1)		NOT NULL
+,	GenderCode			CHAR(1)		NOT NULL	--CONSTRAINT CK_Gender CHECK (GenderCode = 'F' OR GenderCode = 'M' OR GenderCode = 'X')
+		CONSTRAINT CK_GenderV2 CHECK (GenderCode LIKE '[FMX]')
 ,	[Address]			VARCHAR(30)	NULL
 ,	Birthdate			DATETIME	NULL
-,	PostalCode			CHAR(6)		NULL
-,	AvgMark				DECIMAL(4,1) NULL
-,	NoOfCourses			SMALLINT	NULL
+,	PostalCode			CHAR(6)		NULL		CONSTRAINT CK_PostalCode CHECK (PostalCode LIKE '[A-Z][0-9][A-Z][0-9][A-Z][0-9]')
+,	AvgMark				DECIMAL(4,1) NULL		CONSTRAINT CK_AvgMark CHECK (AvgMark BETWEEN 0 AND 100)
+,	NoOfCourses			SMALLINT	NULL		CONSTRAINT CK_MinCourses CHECK (NoOfCourses >= 0)
+		CONSTRAINT DF_NoOfCourses DEFAULT 0
 )
 
 CREATE TABLE CLUB (
-	ClubID				INT			NOT NULL
+	ClubID				INT			NOT NULL	CONSTRAINT PK_Club PRIMARY KEY CLUSTERED
 ,	ClubName			VARCHAR(50)	NOT NULL
 )
 
 CREATE TABLE Course (
-	CourseID			CHAR(8)		NOT NULL
+	CourseID			CHAR(8)		NOT NULL	CONSTRAINT PK_Course PRIMARY KEY CLUSTERED
 ,	CourseName			VARCHAR(40)	NOT NULL
-,	Hours				SMALLINT	NULL
-,	NoOfStudents		SMALLINT	NULL
+,	Hours				SMALLINT	NULL		CONSTRAINT CK_MinHours CHECK (Hours > 0)
+,	NoOfStudents		SMALLINT	NULL		CONSTRAINT CK_MinStudents CHECK (NoOfStudents >= 0)
 )
 
 CREATE TABLE Activity (
-	StudentID			INT			NOT NULL
-,	ClubID				INT			NOT NULL
+	StudentID			INT			NOT NULL	CONSTRAINT FK_ActivityToStudent REFERENCES Student (StudentID)
+,	ClubID				INT			NOT NULL	CONSTRAINT FK_ActivityToClub REFERENCES Club (ClubID)
+,	CONSTRAINT PK_Activity PRIMARY KEY CLUSTERED (StudentID, ClubID)
 )
 
 CREATE TABLE Grade (
-	StudentID			INT			NOT NULL
-,	CourseID			CHAR(8)		NOT NULL
-,	Mark				SMALLINT	NULL
+	StudentID			INT			NOT NULL	CONSTRAINT FK_GradeToStudent REFERENCES Student (StudentID)
+,	CourseID			CHAR(8)		NOT NULL	CONSTRAINT FK_GradeToCourse REFERENCES Course (CourseID)
+,	Mark				SMALLINT	NULL		CONSTRAINT CK_Mark CHECK (Mark BETWEEN 0 AND 100)
+		-- or (Mark >= 0 AND Mark <= 100)
+		CONSTRAINT DF_Mark DEFAULT 0
+,	CONSTRAINT PK_Grade PRIMARY KEY CLUSTERED (StudentID, CourseID)
 )
 
+
+--- ALTER TABLEs:
+ALTER TABLE ....
