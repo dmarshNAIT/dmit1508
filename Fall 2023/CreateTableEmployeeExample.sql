@@ -1,3 +1,5 @@
+-- tell SSMS which database to use
+USE Sandbox
 
 -- drop the old versions of the tables
 DROP TABLE IF EXISTS EmployeeOnProject
@@ -25,6 +27,7 @@ CREATE TABLE EmployeeOnProject (
 ,	ProjectNumber	INT			NOT NULL
 		CONSTRAINT FK_EmployeeOnProjectToProject REFERENCES Project (ProjectNumber)
 ,	WeeklyHours		INT			NOT NULL CONSTRAINT DF_WeeklyHours DEFAULT 5.0
+		CONSTRAINT CK_EmployeeHours CHECK (WeeklyHours <= 20)
 ,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
 
@@ -33,3 +36,20 @@ EXEC sp_help Employee
 EXEC sp_help EmployeeOnProject
 EXEC sp_help Project
 
+
+------------------------------------- BONUS QUESTIONS ---------------------------------------------
+
+-- is CHECK case-sensitive?
+ALTER TABLE Employee ADD CONSTRAINT CK_NameABC CHECK (FirstName LIKE 'D%')
+INSERT INTO Employee VALUES ('12345678901', 'Marsh', 'Dana') -- works
+INSERT INTO Employee VALUES ('12345678902', 'Marsh', 'dana') -- also works!
+INSERT INTO Employee VALUES ('12345678903', 'Dana', 'Marsh') -- data has not been added
+-- LIKE operator is not case-sensitive
+
+-- can we use the full month of January?
+ALTER TABLE Employee ADD HireDate DATETIME
+ALTER TABLE Employee ADD CONSTRAINT CK_HireDate CHECK (HireDate LIKE '%JAN%')
+INSERT INTO Employee VALUES ('12345678903', 'Marsh', 'Dana', '2020-01-01') -- works
+ALTER TABLE Employee ADD CONSTRAINT CK_HireDate2 CHECK (HireDate LIKE '%JANUARY%')
+INSERT INTO Employee VALUES ('12345678904', 'Marsh', 'Dana', '2020-01-01') -- does not work
+-- full month of JANUARY did not work
