@@ -40,16 +40,22 @@ EXEC sp_help Project
 ------------------------------------- BONUS QUESTIONS ---------------------------------------------
 
 -- is CHECK case-sensitive?
+-- first let's make a rule that names must start with D
 ALTER TABLE Employee ADD CONSTRAINT CK_NameABC CHECK (FirstName LIKE 'D%')
+-- then, let's try to add in records and see which work and which do not.
 INSERT INTO Employee VALUES ('12345678901', 'Marsh', 'Dana') -- works
 INSERT INTO Employee VALUES ('12345678902', 'Marsh', 'dana') -- also works!
 INSERT INTO Employee VALUES ('12345678903', 'Dana', 'Marsh') -- data has not been added
--- LIKE operator is not case-sensitive
+-- LIKE operator is NOT case-sensitive
 
 -- can we use the full month of January?
+-- let's add the new column and its constraint:
 ALTER TABLE Employee ADD HireDate DATETIME
 ALTER TABLE Employee ADD CONSTRAINT CK_HireDate CHECK (HireDate LIKE '%JAN%')
+-- now let's try to add an employee that matches the constraint
 INSERT INTO Employee VALUES ('12345678903', 'Marsh', 'Dana', '2020-01-01') -- works
+-- now let's create a slightly different constraint
 ALTER TABLE Employee ADD CONSTRAINT CK_HireDate2 CHECK (HireDate LIKE '%JANUARY%')
+-- and let's see if we can still add that same employee (with a new PK)
 INSERT INTO Employee VALUES ('12345678904', 'Marsh', 'Dana', '2020-01-01') -- does not work
--- full month of JANUARY did not work
+-- full month of JANUARY did NOT work
