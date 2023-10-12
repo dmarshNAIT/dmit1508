@@ -12,8 +12,8 @@ DROP TABLE IF EXISTS OtherTable
 CREATE TABLE fsdkdsfkjdfsldsf
 
 -- Q2:
-dsfkjldfskjldsflkjdfs
+ALTER TABLE .....
 -- I don't know if I did this correctly, is there a better way?
 
 -- Q3
-sfdlkjdfskljdsfklj
+CREATE INDEX .....
