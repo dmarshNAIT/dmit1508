@@ -69,3 +69,7 @@ SELECT	StudentID
 FROM Registration
 GROUP BY StudentID
 HAVING Avg(Mark) > 80
+
+-- Oct 18
+SELECT ALL FirstName FROM Student -- we see all 17 students
+SELECT DISTINCT FirstName FROM Student -- 14 unique names
