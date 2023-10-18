@@ -105,3 +105,11 @@ FROM Student
 
 -- date functions
 SELECT GetDate() AS CurrentDateTime
+
+SELECT Birthdate
+, DateAdd(yy, 16, Birthdate) AS 'Eligible for Driver License'
+, DateDiff(dd, Birthdate, GetDate()) AS 'How many days old'
+, DateName(mm, Birthdate) AS 'Birth month'
+, DatePart(mm, Birthdate) AS 'Birth month'
+, Month(Birthdate) AS 'Birth month'
+FROM Student
