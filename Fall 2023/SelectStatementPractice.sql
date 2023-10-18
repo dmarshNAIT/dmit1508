@@ -73,3 +73,35 @@ HAVING Avg(Mark) > 80
 -- Oct 18
 SELECT ALL FirstName FROM Student -- we see all 17 students
 SELECT DISTINCT FirstName FROM Student -- 14 unique names
+-- DISTINCT removes duplicate rows from the result
+
+-- combining COUNT with DISTINCT
+SELECT COUNT(*) AS '# of students'
+,	COUNT(FirstName) AS '# of students with a First Name'
+,	COUNT(DISTINCT FirstName) AS '# of unique first names'
+FROM Student
+
+SELECT FirstName 
+FROM Student
+ORDER BY FirstName -- alphabetical order
+
+SELECT FirstName 
+FROM Student
+ORDER BY FirstName DESC -- reverse ABC
+
+-- string functions:
+SELECT PostalCode
+, LEN(PostalCode) AS Length
+, LEFT(PostalCode, 3) AS 'First 3 characters of Postal Code'
+, RIGHT(PostalCode, 3) AS 'Last 3 characters of Postal Code'
+, SUBSTRING(PostalCode, 3, 2) AS 'Middle 2 characters'
+, REVERSE(FirstName) AS 'Reverse First Name'
+, UPPER(FirstName) AS UpperCaseName
+, LOWER(FirstName) AS LowerCaseName
+, '       ABC    ' AS OriginalString
+, LTRIM('       ABC    ') AS LeftTrimmedString
+, RTRIM('       ABC    ') AS RightTrimmedString
+FROM Student
+
+-- date functions
+SELECT GetDate() AS CurrentDateTime
