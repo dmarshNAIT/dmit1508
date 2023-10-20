@@ -29,8 +29,13 @@ FROM Student
 GROUP BY DateName(mm, Birthdate)
 
 --4. Select the names of all the students born in December.
+SELECT FirstName + ' ' + LastName AS FullName
+FROM Student
+WHERE DATENAME(mm, Birthdate) = 'December'
 
 --5. select last three characters of all the CourseIDs
+SELECT RIGHT(CourseID, 3) AS LastThreeCharacters
+FROM Course
 
 --6. Select the characters in the position description from characters 8 to 13 for PositionID 5
 SELECT SUBSTRING(PositionDescription, 8, 6) AS RandomSubstring
@@ -38,6 +43,10 @@ FROM Position
 WHERE PositionID = 5
 
 --7. Select all the student first names as upper case.
+SELECT UPPER(FirstName) AS UppercaseFirstName
+FROM Student
 
 --8. Select the first names of students whose first names are 3 characters long.
-
+SELECT FirstName
+FROM Student
+WHERE LEN(FirstName) = 3

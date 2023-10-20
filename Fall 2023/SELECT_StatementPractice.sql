@@ -1,3 +1,6 @@
+USE IQSchool
+GO
+
 -- Oct 11
 SELECT FirstName
 , LastName
@@ -113,3 +116,33 @@ SELECT Birthdate
 , DatePart(mm, Birthdate) AS 'Birth month'
 , Month(Birthdate) AS 'Birth month'
 FROM Student
+
+-------------------- JOINs ------------------------------
+-- we have 17 students at the school (because there are 17 rows in the Student table)
+SELECT FirstName, LastName, Mark
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+ORDER BY FirstName, LastName
+
+SELECT FirstName, LastName, AVG(Mark) AS AverageMark
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+GROUP BY Student.StudentID, FirstName, LastName
+-- we are grouping by StudentID bc FirstName + LastName aren't necessarily unique
+-- we don't want to group together both Dave Browns
+ORDER BY FirstName, LastName
+-- this gives us 8 rows: there are 8 students who are registered
+
+SELECT FirstName, LastName, AVG(Mark) AS AverageMark
+FROM Student
+LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
+GROUP BY Student.StudentID, FirstName, LastName
+ORDER BY FirstName, LastName
+-- this gives us 17 rows: there are 17 students in total
+
+SELECT FirstName, LastName, AVG(Mark) AS AverageMark
+FROM Student
+RIGHT JOIN Registration ON Student.StudentID = Registration.StudentID
+GROUP BY Student.StudentID, FirstName, LastName
+ORDER BY FirstName, LastName
+-- this returns the exact same as the INNER
