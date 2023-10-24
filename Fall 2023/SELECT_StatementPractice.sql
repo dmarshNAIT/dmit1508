@@ -146,3 +146,20 @@ RIGHT JOIN Registration ON Student.StudentID = Registration.StudentID
 GROUP BY Student.StudentID, FirstName, LastName
 ORDER BY FirstName, LastName
 -- this returns the exact same as the INNER
+
+-- Oct 24 UNION examples
+SELECT FirstName, LastName
+FROM Student -- 17 students
+UNION ALL
+SELECT FirstName, LastName
+FROM Staff -- 10 staff
+-- by default, UNION removes duplicate results
+-- UNION ALL forces them to be shown
+
+-- subqueries
+-- show me all students who have NOT made a payment
+SELECT StudentID, FirstName, LastName
+FROM Student
+WHERE StudentID NOT IN
+	(SELECT DISTINCT StudentID FROM Payment)
+	-- this subquery gives me all the students who HAVE made a payment
