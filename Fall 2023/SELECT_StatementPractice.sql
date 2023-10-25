@@ -163,3 +163,19 @@ FROM Student
 WHERE StudentID NOT IN
 	(SELECT DISTINCT StudentID FROM Payment)
 	-- this subquery gives me all the students who HAVE made a payment
+
+
+-- Oct 25 class examples
+-- first let's create a view using an existing (working) SELECT statement:
+CREATE VIEW v_StudentMarks
+AS
+SELECT FirstName + ' ' + LastName AS FullName
+	, CourseName
+	, Mark
+FROM Student
+INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
+INNER JOIN Course ON Offering.CourseID = Course.CourseId
+
+-- now we can select from that view just like we select from a table:
+SELECT * FROM v_StudentMarks
