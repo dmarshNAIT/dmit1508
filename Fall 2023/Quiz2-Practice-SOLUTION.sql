@@ -38,7 +38,7 @@ FROM club
 INNER JOIN Activity ON club.ClubId = Activity.ClubId
 GROUP BY club.clubid
 	, clubname
-HAVING count(*) > 3
+HAVING count(*) >= 3 -- corrected Oct 31, 2023
 
 --3a. Select the staff fullnames, their hiredate, and the month NAME they were hired. List them in chronological order by month
 SELECT firstname + ' ' + lastname AS 'StaffName'
