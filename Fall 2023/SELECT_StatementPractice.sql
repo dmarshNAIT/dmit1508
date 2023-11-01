@@ -5,7 +5,7 @@ GO
 SELECT FirstName
 , LastName
 , FirstName + ' ' + LastName AS [Full Name]
-, FullName = FirstName + ' ' + LastName
+, FullName = FirstName + ' ' + LastName -- this is exactly the same as the previous line
 FROM Student
 
 SELECT *
