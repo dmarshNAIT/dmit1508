@@ -1,14 +1,33 @@
 --SQL Flow Control and Variables Exercise
 --Use IQSchool database
+USE IQSchool
+GO
 
 --1.	Create a stored procedure called StudentClubCount. It will accept a clubID as a parameter. If the count of students in that club is greater than 2 print ‘A successful club!’. If the count is not greater than 2 print ‘Needs more members!’.
 
 -- create a variable called @ClubID
+DECLARE @ClubID VARCHAR(10)
+
 -- assign it a literal value (any ClubID is fine)
+SET @ClubID = 'Chess'
+
 -- (optional) create another variable called @StudentCount & assign it a value from the data in the DB
+DECLARE @StudentCount INT
+SELECT @StudentCount = COUNT(*)
+	FROM Activity
+	WHERE ClubID = @ClubID
+
 -- If the count of students in that club is greater than 2 print ‘A successful club!’. If the count is not greater than 2 print ‘Needs more members!’.
-
-
+IF @StudentCount > 2
+	BEGIN
+	PRINT 'A successful club!'
+	END
+ELSE
+	BEGIN
+	PRINT 'Needs more members'
+	END
+-- testing for ACM (3 members): successful club! Test has passed.
+-- testing for CHESS (1 lonely member): needs more members. Test has passed.
 
 
 
