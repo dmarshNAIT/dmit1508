@@ -27,7 +27,7 @@ ELSE
 	PRINT 'Needs more members'
 	END
 -- testing for ACM (3 members): successful club! Test has passed.
--- testing for CHESS (1 lonely member): needs more members. Test has passed.
+-- testing for CHESS (1 lonely member)
 
 
 
