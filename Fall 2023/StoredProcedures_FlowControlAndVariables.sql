@@ -8,13 +8,13 @@ GO
 CREATE PROCEDURE StudentClubCount ( @ClubID VARCHAR(10) = NULL )
 AS
 
-IF @ClubID IS NULL
-	BEGIN
+IF @ClubID IS NULL -- if no param was provided
+	BEGIN 
 	PRINT 'Club ID is a required parameter.'
 	END
 ELSE -- if we are provided a param:
 	BEGIN
-	-- (optional) create another variable called @StudentCount & assign it a value from the data in the DB
+	-- create another variable called @StudentCount & assign it a value from the data in the DB
 	DECLARE @StudentCount INT
 	SELECT @StudentCount = COUNT(*)
 		FROM Activity
@@ -23,18 +23,26 @@ ELSE -- if we are provided a param:
 	-- If the count of students in that club is greater than 2 print ‘A successful club!’. If the count is not greater than 2 print ‘Needs more members!’.
 	IF @StudentCount > 2
 		BEGIN
-		PRINT 'A successful club!'
+			PRINT 'A successful club!'
 		END
 	ELSE
 		BEGIN
-		PRINT 'Needs more members'
+			PRINT 'Needs more members'
 		END
 	END
 
 RETURN -- this marks the end of my SP definition
 
+GO -- this marks the end of the batch (each CREATE PROCEDURE must be alone in its batch)
+
 -- testing for ACM (3 members): successful club! Test has passed.
+EXEC StudentClubCount 'ACM'
 -- testing for CHESS (1 lonely member)
+EXEC StudentClubCount 'CHESS'
+-- test with no params:
+EXEC StudentClubCount
+-- test with a nonsense club
+EXEC StudentClubCount 'I hate Databases' -- this club doesn't exist; a bonus challenge we could do is add another branch to print a message that tells the user that.
 
 --2.	Create a stored procedure called BalanceOrNoBalance. It will accept a studentID as a parameter. Each course has a cost. If the total of the costs for the courses the student is registered in is more than the total of the payments that student has made, then print ‘balance owing!’ otherwise print ‘Paid in full! Welcome to IQ School!’
 --Do Not use the BalanceOwing field in your solution. 

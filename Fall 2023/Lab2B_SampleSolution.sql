@@ -34,13 +34,13 @@ FROM Employee
 ORDER BY LastName DESC
 
 --e.	Select the paymentTypeID and description for all the payment types that have been used on more than 3 payments.(4 marks)
-SELECT paymenttype.paymenttypeid
-	,description
-FROM PaymentType
-INNER JOIN payment ON PaymentType.PaymentTypeID = Payment.PaymentTypeID
-GROUP BY paymenttype.PaymentTypeID
-	,Description
-HAVING count(*) > 3
+
+SELECT paytype.PaymentTypeID, Description--, COUNT(*)
+FROM PaymentType AS paytype
+INNER JOIN Payment AS pay ON pay.PaymentTypeID = paytype.PaymentTypeID
+GROUP BY paytype.PaymentTypeID, Description
+HAVING COUNT(*) > 3
+
 
 --f.	Select BookingID, StartDate, EndDate, OwnerID, Full Name(one column), Full Address (one column), sub, GST, total, DogID, Dog Name for Booking ID 4.
 SELECT bookingid
