@@ -11,9 +11,76 @@ GO
 
 --1.	Create a stored procedure called “GoodCourses” to select all the course names that have averages greater than a given value. 
 
+DROP PROCEDURE IF EXISTS GoodCourses -- delete any old version of the SP
+GO
+
+CREATE PROCEDURE GoodCourses (@GoodMark DECIMAL(5,2) = NULL)
+AS
+-- check if my param is null. if so, RAISERROR
+IF @GoodMark IS NULL
+	BEGIN
+	RAISERROR('Oh no! Missing parameter!', 16, 1)
+	END
+-- otherwise: SELECT CourseName HAVING Avg > param
+ELSE 
+	BEGIN
+	
+	SELECT CourseName
+	FROM Course
+	INNER JOIN Offering ON Course.CourseId = Offering.CourseId
+	INNER JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
+	GROUP BY CourseName, Course.CourseId
+	HAVING AVG(Mark) > @GoodMark
+
+	END
+
+RETURN -- marks the end of the SP
+GO -- marks the end of the batch
+
+-- test:
+EXEC GoodCourses 80
+EXEC GoodCourses -- we see an error, as expected
+EXEC GoodCourses 100
+EXEC GoodCourses 40
+EXEC GoodCourses '' -- weird error: we can ignore this (for now)
+
 --2.	Create a stored procedure called “HonorCoursesForOneTerm” to select all the course names that have average > a given value in a given semester. *You can check all parameters in one conditional expression and a common message printed if any of them are missing*
 
+DROP PROCEDURE IF EXISTS HonorCoursesForOneTerm -- delete any old version of the SP
+GO
+
+CREATE PROCEDURE HonorCoursesForOneTerm (
+	@GoodMark DECIMAL(5,2) = NULL,	@Semester CHAR(5) =  NULL
+) AS
+-- check if my params are null. if so, RAISERROR
+IF @GoodMark IS NULL OR @Semester IS NULL
+	BEGIN
+	RAISERROR('Oh no! Missing parameter(s)!', 16, 1)
+	END
+-- otherwise: SELECT CourseName HAVING Avg > param
+ELSE 
+	BEGIN
+	
+	SELECT CourseName
+	FROM Course
+	INNER JOIN Offering ON Course.CourseId = Offering.CourseId
+	INNER JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
+	WHERE SemesterCode = @Semester
+	GROUP BY CourseName, Course.CourseId
+	HAVING AVG(Mark) > @GoodMark
+
+	END
+
+RETURN -- marks the end of the SP
+GO -- marks the end of the batch
+
+EXEC HonorCoursesForOneTerm 80, 'A100'
+EXEC HonorCoursesForOneTerm 80 -- errors, as expected
+EXEC HonorCoursesForOneTerm 80, 'xyz'
+
 --3.	Create a stored procedure called “NotInACourse” that lists the full names of the staff who have not taught a given CourseID.
+
+GO
 
 CREATE PROCEDURE NotInACourse (@CourseID CHAR(8) = NULL)
 AS
