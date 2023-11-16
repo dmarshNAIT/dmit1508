@@ -54,12 +54,13 @@ ELSE -- we do have parameters
 		END
 	ELSE -- the INSERT was a success
 		BEGIN
+
 		DELETE FROM Registration
 		WHERE OfferingCode IN  -- offering code was in a semester that started in 2023
 			(SELECT OfferingCode FROM Offering WHERE SemesterCode IN
 				-- a list of semesters that started in the given year:
 				(SELECT SemesterCode FROM Semester WHERE YEAR(StartDate) = @year)
-			)
+			) -- instead of multiple subqueries, we could have used a JOIN
 
 		IF @@ERROR != 0 -- something went wrong
 			BEGIN
@@ -72,5 +73,12 @@ ELSE -- we do have parameters
 			END
 		END
 	END -- ends the outer ELSE
-RETURN
-GO
+RETURN -- end my SP
+GO -- end my batch
+
+-- testing time:
+SELECT COUNT(*) FROM Registration -- 70 records
+SELECT COUNT(*) FROM ArchiveRegistration -- 0 records
+EXEC sp_ArchiveRegistration 2022
+SELECT COUNT(*) FROM Registration -- 70-9 = 61 records?
+SELECT COUNT(*) FROM ArchiveRegistration -- 9 records
