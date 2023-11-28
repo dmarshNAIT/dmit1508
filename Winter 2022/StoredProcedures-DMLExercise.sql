@@ -351,6 +351,7 @@ ELSE -- the params WERE provided
 	ELSE -- the student IS registered
 		BEGIN
 
+		BEGIN TRANSACTION
 		-- UPDATE WithDrawn value
 		UPDATE Registration
 		SET WithdrawYN = 'Y'
@@ -361,6 +362,7 @@ ELSE -- the params WERE provided
 		IF @@ERROR <> 0
 			BEGIN
 			RAISERROR('Student could not be withdrawn', 16, 1)
+			ROLLBACK TRANSACTION
 			END
 		ELSE -- the UPDATE did work
 			BEGIN
@@ -391,6 +393,11 @@ ELSE -- the params WERE provided
 			IF @@ERROR <> 0
 				BEGIN
 				RAISERROR('Error updating Balance Owing', 16, 1)
+				ROLLBACK TRANSACTION
+				END	
+			ELSE -- the UPDATE worked
+				BEGIN
+				COMMIT TRANSACTION
 				END
 			END
 		END
