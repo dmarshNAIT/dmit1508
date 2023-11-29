@@ -175,3 +175,107 @@ DELETE FROM MovieCharacter
 
 -- delete many characters successfully
 DELETE FROM MovieCharacter WHERE AgentID = 3
+GO
+
+------------------------------ Practice #5 ------------------------------
+--Create a trigger that enforces a rule that an Agent cannot represent more than 2 movie characters.
+CREATE TRIGGER TR_PracticeQ5
+	ON MovieCharacter
+	FOR INSERT, UPDATE
+AS
+
+-- check to see if the trigger even needs to run
+IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+	BEGIN
+	-- check to see if the rule was broken. if so, RAISERROR & ROLLBACK
+	IF EXISTS (	-- look at the newly inserted/updated characters
+				-- count the characters per agent
+				SELECT MovieCharacter.AgentID, COUNT(DISTINCT inserted.CharacterID)
+				FROM inserted
+				INNER JOIN MovieCharacter ON inserted.AgentID = MovieCharacter.AgentID
+				GROUP BY MovieCharacter.AgentID
+				HAVING COUNT(DISTINCT MovieCharacter.CharacterID) > 2)
+		BEGIN
+		RAISERROR('Agents cannot represent more than 2 characters', 16, 1)
+		ROLLBACK TRANSACTION
+		END
+	END
+RETURN
+
+-- TEST:
+-- insert 0 rows
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage)
+SELECT CharacterName, CharacterMovie, CharacterRating, Characterwage
+FROM MovieCharacter WHERE CharacterName = 'Bob'
+-- insert 1 row
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage, AgentID)
+VALUES ('Miles Morales', 'Spiderverse', 5, 200, 1)
+
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage, AgentID)
+VALUES ('Miles Morales', 'Spiderverse', 5, 200, 3)
+-- insert many rows
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage, AgentID)
+VALUES ('Miles Morales', 'Spiderverse', 5, 200, 1), ('Miles Morales', 'Spiderverse', 5, 200, 3)
+
+-- update 0 rows
+UPDATE MovieCharacter SET AgentID = 1 WHERE CharacterID = 9999
+-- update 1 row
+UPDATE MovieCharacter SET AgentID = 2 WHERE CharacterID = 13 -- Miles v1
+UPDATE MovieCharacter SET AgentID = 3 WHERE CharacterID = 13 -- Miles v1
+
+-- update many rows
+UPDATE MovieCharacter SET AgentID = 1
+
+INSERT INTO Agent (AgentName, AgentFee) VALUES ('Sheena', 100)
+UPDATE MovieCharacter SET AgentID = 4 WHERE CharacterName LIKE 'Miles%'
+
+SELECT * FROM Agent
+SELECT * FROM MovieCharacter
+
+GO
+------------------------------ Practice #6 ------------------------------
+USE IQSchool
+GO
+
+DROP TABLE IF EXISTS CourseChanges
+CREATE TABLE CourseChanges(
+LogID INT IDENTITY(1,1) NOT NULL 
+CONSTRAINT pk_CourseChanges PRIMARY KEY CLUSTERED
+,	ChangeDate datetime NOT NULL
+,	OldCourseCost money NOT NULL
+,	NewCourseCost money NOT NULL
+,	CourseID CHAR(8) NOT NULL
+)
+
+GO
+
+-- Create a trigger to Log when changes are made to the CourseCost in the Course table.
+DROP TRIGGER IF EXISTS TR_PracticeQ6
+GO
+
+CREATE TRIGGER TR_PracticeQ6
+	ON Course
+	FOR UPDATE
+AS
+-- is there anything to log?
+IF @@ROWCOUNT > 0 AND UPDATE(CourseCost)
+	BEGIN
+
+	-- if so, INSERT it into the log table
+	INSERT INTO CourseChanges (ChangeDate, OldCourseCost, NewCourseCost, CourseID)
+	SELECT GetDate(), deleted.CourseCost, inserted.CourseCost, inserted.CourseId
+	FROM inserted
+	INNER JOIN deleted ON inserted.CourseId = deleted.CourseId
+	WHERE inserted.CourseCost != deleted.CourseCost
+
+	END
+RETURN
+
+-- test:
+-- update 0 rows
+-- update 1 row
+UPDATE Course SET CourseCost = 0 WHERE CourseId = 'DMIT1508'
+-- update many rows
+
+SELECT * FROM Course
+SELECT * FROM CourseChanges
