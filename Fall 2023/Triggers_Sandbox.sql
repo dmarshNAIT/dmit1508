@@ -69,12 +69,22 @@ RETURN
 -- test our trigger
 -- does it work as expected for 0 rows?
 UPDATE MovieCharacter SET CharacterWage = -100 WHERE CharacterID = 9999
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage)
+SELECT CharacterName, CharacterMovie, CharacterRating, Characterwage
+FROM MovieCharacter WHERE CharacterName = 'Bob'
 -- does it work as expected for 1 row?
 UPDATE MovieCharacter SET CharacterWage = -100 WHERE CharacterID = 3
 UPDATE MovieCharacter SET CharacterWage = 100 WHERE CharacterID = 3
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage)
+VALUES ('Miles Morales', 'Spiderverse', 5, 200)
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage)
+VALUES ('Ethan Hunt', 'Mission Impossible', 5, -1000)
 -- does it work as expected for many rows?
 UPDATE MovieCharacter SET Characterwage = 500 WHERE CharacterMovie = 'Star Wars'
 UPDATE MovieCharacter SET Characterwage = -5 WHERE CharacterMovie = 'Star Wars'
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage)
+VALUES ('Miles Morales', 'Spiderverse', 5, 200), 
+('Ethan Hunt', 'Mission Impossible', 5, -1000)
 
 SELECT * FROM MovieCharacter
 GO
@@ -119,3 +129,49 @@ UPDATE Agent SET AgentFee = 1000 WHERE AgentID = 1
 UPDATE Agent SET AgentFee = 200
 
 SELECT * FROM Agent
+
+GO
+------------------------------ Practice #4 ------------------------------
+--Create a trigger that enforces a rule that a MovieCharacter cannot be deleted if their Agent's AgentFee is >= 50.
+CREATE TRIGGER TR_PracticeQ4
+	ON MovieCharacter
+	FOR DELETE
+AS
+
+-- check to see if the trigger needs to run
+IF @@ROWCOUNT > 0
+	BEGIN
+	-- check to see if the rule was broken
+	-- look at the deleted characters, and see if their agent's fee was $50 or more. if so, RAISERROR & ROLLBACK
+	IF EXISTS (	SELECT *
+				FROM deleted
+				INNER JOIN Agent ON deleted.AgentID = Agent.AgentID
+				WHERE Agent.AgentFee >= 50)
+		BEGIN
+		RAISERROR('The agent makes too much to delete this character', 16, 1)
+		ROLLBACK TRANSACTION
+		END
+	END
+RETURN
+
+-- Test:
+-- delete 0 characters
+DELETE FROM MovieCharacter WHERE CharacterID = 99999
+
+-- delete 1 character with a rich agent
+UPDATE MovieCharacter SET AgentID = 1 WHERE CharacterName LIKE 'Miles%'
+
+SELECT * FROM MovieCharacter
+
+DELETE FROM MovieCharacter WHERE CharacterName LIKE 'Miles%'
+
+-- delete 1 character successfully
+UPDATE MovieCharacter SET AgentID = 3 WHERE CharacterName LIKE 'Miles%'
+
+DELETE FROM MovieCharacter WHERE CharacterName LIKE 'Miles%'
+
+-- delete many characters with a rich agent
+DELETE FROM MovieCharacter
+
+-- delete many characters successfully
+DELETE FROM MovieCharacter WHERE AgentID = 3
