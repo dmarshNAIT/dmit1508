@@ -238,6 +238,7 @@ USE IQSchool
 GO
 
 DROP TABLE IF EXISTS CourseChanges
+
 CREATE TABLE CourseChanges(
 LogID INT IDENTITY(1,1) NOT NULL 
 CONSTRAINT pk_CourseChanges PRIMARY KEY CLUSTERED
@@ -273,9 +274,11 @@ RETURN
 
 -- test:
 -- update 0 rows
+UPDATE Course SET CourseCost = 999 WHERE CourseID = 'ABCD1234'
 -- update 1 row
-UPDATE Course SET CourseCost = 0 WHERE CourseId = 'DMIT1508'
+UPDATE Course SET CourseCost = 5 WHERE CourseId = 'DMIT1508'
 -- update many rows
+UPDATE Course SET CourseCost = 100 WHERE CourseName LIKE '%Project%'
 
 SELECT * FROM Course
 SELECT * FROM CourseChanges
