@@ -282,3 +282,59 @@ UPDATE Course SET CourseCost = 100 WHERE CourseName LIKE '%Project%'
 
 SELECT * FROM Course
 SELECT * FROM CourseChanges
+
+
+------------------------------ Practice #7 ------------------------------
+-- Create a trigger to enforce referential integrity between the Agent and MovieCharacter table.
+
+-- This is a bit of a silly example because FKs already do this for us, but it would make sense if we had separate databases that didn't have FKs defining that relationship.
+-- to "hack" this, we will disable the FK between these tables, and recreate the functionality in a trigger instead.
+
+USE MovieCharacter
+GO
+
+-- first, disable the FK:
+ALTER TABLE MovieCharacter NOCHECK CONSTRAINT fk_MovieCharacterToAgent
+GO
+
+-- then, I need 2 triggers. One on the parent, one on the child.
+
+-- on the child table, I need to make sure that every child has a parent record:
+CREATE TRIGGER TR_MovieCharacter_FK_Child
+ON MovieCharacter
+FOR UPDATE, INSERT
+AS
+
+IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+	BEGIN
+	IF EXISTS (
+			SELECT * FROM inserted
+			WHERE AgentID NOT IN (Select AgentID FROM Agent)
+	
+	) -- if there are records with no valid parent
+		BEGIN
+		ROLLBACK TRANSACTION
+		RAISERROR('this child has no parent :(', 16, 1)
+		END
+	END
+RETURN
+GO
+
+-- on the parent table, I need to make sure I'm not deleting a parent who has a child:
+CREATE TRIGGER TR_MovieCharacter_FK_Parent
+ON Agent
+FOR DELETE
+AS
+IF @@ROWCOUNT > 0
+	BEGIN
+	IF EXISTS (
+		SELECT * FROM deleted
+		INNER JOIN MovieCharacter ON deleted.AgentID = MovieCharacter.AgentID
+	) -- if this parent has 1+ child record
+		BEGIN
+		ROLLBACK TRANSACTION
+		RAISERROR('this parent has children: cannot dropkick', 16, 1)
+		END
+	END
+RETURN
+GO
