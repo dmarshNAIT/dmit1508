@@ -31,9 +31,13 @@ CREATE TABLE Project (
 -- EXEC sp_help Project
 
 CREATE TABLE EmployeeOnProject (
-	EmployeeID CHAR(11)	NOT NULL
-,	ProjectNumber INT NOT NULL
-,	WeeklyHours INT NOT NULL
+	EmployeeID CHAR(11)	NOT NULL 
+		CONSTRAINT FK_EmployeeOnProjectToEmployee REFERENCES Employee(EmployeeID)
+,	ProjectNumber INT NOT NULL 
+		CONSTRAINT EmployeeOnProjectToProject REFERENCES Project(ProjectNumber)
+,	WeeklyHours INT NOT NULL 
+		CONSTRAINT CK_MaxHours CHECK (WeeklyHours <= 20)
+		CONSTRAINT DF_Hours DEFAULT 5
 ,	CONSTRAINT PK_EmployeeOnProject PRIMARY KEY CLUSTERED (EmployeeID, ProjectNumber)
 )
 
