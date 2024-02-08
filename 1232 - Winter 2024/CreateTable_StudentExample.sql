@@ -1,6 +1,14 @@
 -- identify which DB to use
 USE Sandbox3
 
+-- drop any old versions of the tables
+DROP TABLE IF EXISTS Activity
+DROP TABLE IF EXISTS Grade
+DROP TABLE IF EXISTS Club
+DROP TABLE IF EXISTS Student
+DROP TABLE IF EXISTS Course
+-- we must drop child tables before their parent
+
 -- create each table
 CREATE TABLE Course (
 	CourseID	CHAR(6) NOT NULL CONSTRAINT PK_Course PRIMARY KEY CLUSTERED
@@ -56,3 +64,33 @@ CREATE TABLE Activity (
 		CONSTRAINT FK_ActivityToClub REFERENCES Club (ClubID)
 ,	CONSTRAINT PK_Activity PRIMARY KEY CLUSTERED (StudentID, ClubID)
 )
+
+-- ALTER TABLE exercise
+--Add a MeetingLocation varchar(50) field to the Club table
+ALTER TABLE Club 
+	ADD MeetingLocation VARCHAR(50) NULL
+-- if there are data in the table, we either
+-- allow NULL values, OR
+-- need to have a DEFAULT value for MeetingLocation
+
+--Add a constraint to birthdate to ensure the value is < today's date
+ALTER TABLE Student 
+	ADD CONSTRAINT CK_Birthdate CHECK (Birthdate < GetDate())
+
+--Add a constraint to set a default of 80 to the Hours field
+ALTER TABLE Course
+	ADD CONSTRAINT DF_Hours DEFAULT 80 FOR Hours
+-- Default constraints have a slightly different syntax
+-- in an ALTER vs a CREATE
+
+--Oops, changed our minds…. DISABLE the check constraint for the birthdate field
+ALTER TABLE Student
+	NOCHECK CONSTRAINT CK_Birthdate
+
+--Yikes! Change our minds again. ENABLE the check constraint for the Birthdate field
+ALTER TABLE Student
+	CHECK CONSTRAINT CK_Birthdate
+
+--Hold on! Call me silly. Delete the default constraint for the Hours field now!
+ALTER TABLE Course
+	DROP CONSTRAINT DF_Hours
