@@ -10,7 +10,7 @@ USE IQSchool
 
 --4. Select the highest payment amount
 
---5.	 Select the lowest payment amount
+--5. Select the lowest payment amount
 
 --6. Select the total of all the payments that have been made
 
