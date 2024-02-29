@@ -145,3 +145,95 @@ FROM Student
 LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
 GROUP BY FirstName, LastName, Student.StudentID
 -- all parents, even if they don't have children
+
+------------ Feb 28 class ------------
+
+-- how many payments were made of each type?
+SELECT PaymentTypeID
+	, COUNT(*) AS NumberOfRows
+	-- or:
+	, COUNT(PaymentID) AS NumberOfPayments
+FROM Payment
+GROUP BY PaymentTypeID
+
+-- now, show me just the payment types used < 5x 
+SELECT PaymentTypeID
+	, COUNT(*) AS NumberOfRows
+FROM Payment
+GROUP BY PaymentTypeID
+HAVING COUNT(*) < 5
+
+-- now, show me the DESCRIPTION of the payments, and how many times each was used
+SELECT PaymentTypeDescription
+	, COUNT(*) AS WrongWayToCount -- # of rows, but one is NULL
+	, COUNT(PaymentID) AS NumberOfPayments
+FROM PaymentType AS pt -- this gives our table a nickname
+LEFT JOIN Payment AS p
+	ON pt.PaymentTypeID = p.PaymentTypeID
+GROUP BY pt.PaymentTypeID, PaymentTypeDescription
+-- we need to GROUP BY type ID bc that is what makes types unique
+-- we need to GROUP BY Desc bc it's in our SELECT statement
+
+-- let's look at the raw data
+SELECT PaymentTypeDescription
+	, PaymentDate
+FROM PaymentType AS pt -- this gives our table a nickname
+LEFT JOIN Payment AS p
+	ON pt.PaymentTypeID = p.PaymentTypeID
+
+-- there are 17 students in our DB, but only 8 in the registration table.
+-- can we write a query to get a list of the students who are NOT in the registration table?
+SELECT DISTINCT Student.StudentID, Registration.StudentID
+FROM Student
+LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
+WHERE Registration.StudentID IS NULL
+
+-- another way to solve this question:
+-- get a list of students
+-- where the student ID is NOT IN the registration table
+
+-- list of students in reg table:
+SELECT DISTINCT StudentID FROM Registration
+
+-- now let's combine that:
+SELECT DISTINCT StudentID 
+FROM Student
+WHERE StudentID NOT IN (
+			SELECT DISTINCT StudentID 
+			FROM Registration
+		)
+
+-- using a subquery, which city has the most students in it?
+SELECT City, COUNT(*) AS NumStudents
+FROM Student
+GROUP BY City
+HAVING COUNT(*) >= ALL(
+		SELECT COUNT(*)
+		FROM Student
+		GROUP BY City)
+
+-- using a subquery, which students have an average mark higher than at least one classmate?
+SELECT FirstName + ' ' + LastName AS FullName
+	, AVG(Mark) AS AverageMark
+FROM Student
+LEFT JOIN Registration ON Student.StudentID = Registration.StudentID
+GROUP BY Student.StudentID, FirstName, LastName
+HAVING AVG(Mark) > ANY ( -- SOME can be used instead of ANY
+	SELECT Avg(Mark)
+	FROM Registration
+	GROUP BY StudentID)
+
+-- now, something that ISN'T a subquery:
+-- let's get a list of all the students and all the staff
+SELECT FirstName + ' ' + LastName  AS Name
+FROM Student -- 17 students
+UNION -- this gets rid of duplicates
+SELECT FirstName + ' ' + LastName  AS Name
+FROM Staff -- 10 students
+
+SELECT FirstName + ' ' + LastName  AS Name
+FROM Student -- 17 students
+UNION ALL -- this leaves in the duplicates
+SELECT FirstName + ' ' + LastName  AS Name
+FROM Staff -- 10 students
+ORDER BY Name
