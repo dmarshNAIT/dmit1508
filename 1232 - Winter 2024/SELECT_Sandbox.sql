@@ -237,3 +237,31 @@ UNION ALL -- this leaves in the duplicates
 SELECT FirstName + ' ' + LastName  AS Name
 FROM Staff -- 10 students
 ORDER BY Name
+
+GO -- marks the end of the batch
+
+------------ Mar 4 class ------------
+-- for every course, I want to see:
+	-- the course name
+	-- the # of times it's been offered
+	-- how many DISTINCT students have taken it
+	-- the average mark
+
+
+CREATE VIEW vw_CourseList AS
+
+SELECT CourseName
+	, COUNT(Offering.OfferingCode) AS NumberOfOfferings
+	, COUNT(DISTINCT Registration.StudentID) AS NumberOfDistinctStudents
+	, AVG(Registration.Mark) AS AverageMark
+FROM Course
+LEFT JOIN Offering ON Course.CourseId = Offering.CourseId
+LEFT JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
+GROUP BY CourseName, Course.CourseID
+
+GO -- marks the end of a batch
+
+-- after a view exists, we can view its definition:
+SP_HELPTEXT vw_CourseList
+-- we can view its contents:
+SELECT * FROM vw_CourseList
