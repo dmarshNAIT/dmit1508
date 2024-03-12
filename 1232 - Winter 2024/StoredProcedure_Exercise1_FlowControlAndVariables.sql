@@ -6,16 +6,30 @@ GO
 --Q1: Create a stored procedure called StudentClubCount. It will accept a clubID as a parameter. If the count of students in that club is greater than 2 print ‘A successful club!’ . If the count is not greater than 2 print ‘Needs more members!’.
 
 -- create a variable called @ClubID
+DECLARE @ClubID VARCHAR(10)
 
 -- give it a starting value
+-- CHESS club has 1 member, CSS club has 5
+SET @ClubID = 'CSS'
 
 -- create a variable called @StudentCount 
+DECLARE @StudentCount INT
 
 -- assign a value to @StudentCount
+SELECT @StudentCount = COUNT(*)
+FROM Activity
+WHERE Activity.ClubId = @ClubID
 
 -- if @StudentCount is greater than 2, print 'a successful club!'
-
+IF @StudentCount > 2
+	BEGIN
+		PRINT 'A successful club!'
+	END
 -- otherwise, print 'needs more members'
+ELSE
+	BEGIN
+		PRINT 'Needs more members'
+	END
 
 
 --Q2: Create a stored procedure called BalanceOrNoBalance. It will accept a studentID as a parameter. Each course has a cost. If the total of the costs for the courses the student is registered in is more than the total of the payments that student has made then print ‘balance owing !’ otherwise print ‘Paid in full! Welcome to School 158!’
