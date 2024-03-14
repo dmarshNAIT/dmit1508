@@ -36,15 +36,36 @@ ELSE
 --Do Not use the BalanceOwing field in your solution. 
 
 -- create a variable called @StudentID, then assign it a value (any Student)
+DECLARE @StudentID INT
+
+SET @StudentID = 199899200 -- arbitrary student from the Registration table
 
 -- create a variable called @TotalCourseCosts, and assign it a value
+DECLARE @TotalCourseCosts DECIMAL(8,2)
+
+SELECT @TotalCourseCosts = SUM(CourseCost)
+FROM Course
+INNER JOIN Offering ON Course.CourseId = Offering.CourseId
+INNER JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
+WHERE Registration.StudentID = @StudentID
 
 -- create a variable called @TotalPayments, and assign it a value
+DECLARE @TotalPayments MONEY
+
+SELECT @TotalPayments = SUM(Amount)
+FROM Payment
+WHERE Payment.StudentID = @StudentID
 
 -- if @TotalCourseCosts > @TotalPayments, print 'Balance Owing!'
-
+IF @TotalCourseCosts > @TotalPayments
+	BEGIN
+		PRINT 'Balance Owing!'
+	END
 -- otherwise, print 'Paid in full. Welcome!'
-
+ELSE
+	BEGIN
+		PRINT 'Paid in full. Welcome!'
+	END
 
 --Q3: Create a stored procedure called ‘DoubleOrNothin’. It will accept a students first name and last name as parameters. If the student name already is in the table then print ‘We already have a student with the name firstname lastname!’ Other wise print ‘Welcome firstname lastname!’
 
