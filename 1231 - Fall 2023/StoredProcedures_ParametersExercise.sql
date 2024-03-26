@@ -157,7 +157,7 @@ RETURN
 GO
 
 
---6.	Create a stored procedure called “Transcript” to select the transcript for a given StudentID. Select the StudentID, full name, course ID’s, course names, and marks.
+--6.	Create a stored procedure called “Transcript” to select the transcript for a given StudentID. Select the StudentID, full name, course IDs, course names, and marks.
 
 CREATE PROCEDURE Transcript (@StudentID INT = NULL) AS
 
