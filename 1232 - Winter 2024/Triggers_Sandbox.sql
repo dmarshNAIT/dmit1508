@@ -1,6 +1,8 @@
 USE IQSchool
 GO
 
+DROP TRIGGER IF EXISTS TR_SillyStudentUpdateTrigger
+GO
 -- Practice Q 1
 --Create a trigger associated with an UPDATE to Student.Balance. It will:
 CREATE TRIGGER TR_SillyStudentUpdateTrigger
@@ -35,6 +37,8 @@ GO
 USE MovieDB
 GO
 
+DROP TRIGGER IF EXISTS TR_PositiveWage
+GO
 -- Practice Q2
 -- Create a trigger to enforce a rule that wages cannot be < 0
 CREATE TRIGGER TR_PositiveWage
@@ -94,7 +98,7 @@ AS
 					WHERE inserted.AgentFee > 2 * deleted.AgentFee )
 			BEGIN
 			RAISERROR('You make too much money', 16, 1)
-			ROLLBACK
+			ROLLBACK TRANSACTION
 			END
 		END
 RETURN
@@ -109,3 +113,131 @@ UPDATE Agent SET AgentFee = 1000 WHERE AgentID = 1
 -- does it work for many rows?
 UPDATE Agent SET AgentFee = 100
 UPDATE Agent SET AgentFee = 10
+
+
+
+DROP TRIGGER IF EXISTS TR_CantDelete
+GO
+
+-- Practice Q #4
+--Create a trigger that enforces a rule that a MovieCharacter cannot be deleted if their Agent's AgentFee is >= 50.
+
+CREATE TRIGGER TR_CantDelete
+	ON MovieCharacter
+	FOR DELETE
+AS
+
+-- make sure the trigger needs to run
+IF @@ROWCOUNT > 0
+	BEGIN
+	-- if so, check if the rule was violated
+	-- let's look at which character(s) were deleted, and see if their agent has a wage >= 50
+	IF EXISTS (	SELECT *
+				FROM deleted
+				INNER JOIN Agent ON deleted.AgentID = Agent.AgentID
+				WHERE Agent.AgentFee >= 50	)
+		BEGIN
+			RAISERROR('Sorry Dave, I cannot do that.', 16, 1)
+			ROLLBACK TRANSACTION
+		END
+	END
+RETURN -- this marks the end of the trigger
+GO
+
+-- testing:
+-- DELETE  0 rows
+DELETE FROM MovieCharacter WHERE CharacterID = 99999
+-- DELETE 1 row successfully
+DELETE FROM MovieCharacter WHERE AgentID = 3
+-- DELETE many rows unsuccessfully
+DELETE FROM MovieCharacter WHERE AgentID = 2
+
+
+DROP TRIGGER IF EXISTS TR_TooManyCharacters
+GO
+-- Practice Q #5
+--Create a trigger that enforces a rule that an Agent cannot represent more than 2 movie characters.
+CREATE TRIGGER TR_TooManyCharacters
+	ON MovieCharacter
+	FOR INSERT, UPDATE
+AS
+-- check if the trigger needs to run
+	IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+		BEGIN
+	-- if so, check if the rule was violated
+		-- look at the character(s) that were inserted/updated
+		-- then count the total characters per agent
+		IF EXISTS (	SELECT MovieCharacter.AgentID, COUNT(MovieCharacter.CharacterID)
+					FROM inserted
+					INNER JOIN MovieCharacter ON inserted.AgentID = MovieCharacter.AgentID
+					GROUP BY MovieCharacter.AgentID
+					HAVING COUNT(MovieCharacter.CharacterID) > 2
+		)
+			BEGIN
+				RAISERROR('That is too much, man.', 16, 1)
+				ROLLBACK TRANSACTION
+			END
+	END
+RETURN
+GO
+
+
+-- testing
+-- test 0 rows, 1 row, many rows
+-- test inserts & updates
+-- test successful changes & unsuccessful changes
+UPDATE MovieCharacter SET AgentID = 3 WHERE CharacterID = 999 -- successfully did nothing
+
+UPDATE MovieCharacter SET AgentID = 2 WHERE CharacterName = 'R2D2' -- rolled back as expected
+
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, CharacterWage, AgentID)
+VALUES ('Snoopy', 'Charlie Brown Christmas', 5, 10000, 3),
+	('Superman', 'Superman', 3, 1, 3)
+
+SELECT * FROM MovieCharacter
+SELECT * FROM Agent
+
+--- back to IQ School for #6...
+USE IQSchool
+GO
+
+CREATE TABLE CourseChanges(
+LogID INT IDENTITY(1,1) NOT NULL 
+CONSTRAINT pk_CourseChanges PRIMARY KEY CLUSTERED
+,	ChangeDate datetime NOT NULL
+,	OldCourseCost money NOT NULL
+,	NewCourseCost money NOT NULL
+,	CourseID CHAR(8) NOT NULL 		-- not CHAR(7)
+)
+GO
+
+-- Practice Q # 6
+-- Create a trigger to Log when changes are made to the CourseCost in the Course table.
+CREATE TRIGGER TR_CostCheck
+	ON Course
+	FOR UPDATE
+AS
+-- check to see if the trigger needs to run (is there anything to log?)
+IF @@ROWCOUNT > 0 AND UPDATE(CourseCost)
+	BEGIN
+	-- if so, log the changes
+	INSERT INTO CourseChanges (ChangeDate, OldCourseCost, NewCourseCost, CourseID)
+	SELECT GetDate(), deleted.CourseCost, inserted.CourseCost, inserted.CourseID
+	FROM inserted
+	INNER JOIN deleted ON inserted.CourseID = deleted.CourseId
+	WHERE inserted.CourseCost != deleted.CourseCost
+	END
+RETURN
+GO
+
+
+-- TESTING:
+-- test 0 rows
+UPDATE Course SET CourseCost = 500 WHERE CourseID = 'ABC123'
+-- test 1 row
+UPDATE Course SET CourseCost = 0 WHERE CourseID = 'DMIT1001'
+-- test many rows
+UPDATE Course SET CourseCost = 20 WHERE MaxStudents = 4 -- why? for fun.
+
+SELECT * FROM Course WHERE MaxStudents = 4
+SELECT * FROM CourseChanges
