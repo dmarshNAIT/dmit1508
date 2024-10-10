@@ -29,3 +29,7 @@ CREATE TABLE EmployeeOnProject (
 EXEC sp_help Employee
 EXEC sp_help EmployeeOnProject
 EXEC sp_help Project
+
+-- add indexes on each FK
+CREATE NONCLUSTERED INDEX IX_EmployeeID ON EmployeeOnProject (EmployeeID)
+CREATE NONCLUSTERED INDEX IX_ProjectNumber ON EmployeeOnProject (ProjectNumber)
