@@ -10,8 +10,6 @@ SELECT StudentID, AVG(Mark) AS AverageMark
 FROM Registration
 GROUP BY StudentID
 
--- NOTE TO SELF: GROUP BY UNIQUE
-
 --4. Select the same data as question 3 but only show the StudentIds and averages that are > 80.
 SELECT StudentID, AVG(Mark) AS AverageMark
 FROM Registration
