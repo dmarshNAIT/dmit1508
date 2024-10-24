@@ -8,7 +8,9 @@ SELECT CourseName, AVG(Mark) AS AverageMark
 FROM Registration
 INNER JOIN Offering ON Registration.OfferingCode = Offering.OfferingCode
 INNER JOIN Course ON Offering.CourseId = Course.CourseId
-GROUP BY Course.CourseId, CourseName
+GROUP BY Course.CourseId, Course.CourseName
+-- we have to group by CourseID as that uniquely differentiates courses
+-- we have to group by CourseName as we are SELECTing but not aggregating it
 
 --3. How many payments where made for each payment type. Display the
 --PaymentTypeDescription and the count.

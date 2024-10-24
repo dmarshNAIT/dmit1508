@@ -18,11 +18,14 @@ ORDER BY ClubId
 
 
 --5. Select the Student full name, course names and marks for studentID 199899200.
-SELECT *
+SELECT s.FirstName + ' ' + s.LastName AS FullName
+	, c.CourseName
+	, reg.Mark
 FROM Student AS s
 INNER JOIN Registration AS reg	ON s.StudentID = reg.StudentID
 INNER JOIN Offering		AS o	ON reg.OfferingCode = o.OfferingCode
 INNER JOIN Course		AS c	ON o.CourseId = c.CourseId
+WHERE s.StudentID = 199899200
 
 
 
