@@ -1,6 +1,8 @@
 ﻿--Triggers Exercise
 --(Use IQSchool Database)
 --NOTE: These questions are not in order of increasing difficulty
+USE IQSchool
+GO
 
 --1.	In order to be fair to all students, a student can only belong to a maximum of 3 clubs. Create a trigger to enforce this rule.
 
