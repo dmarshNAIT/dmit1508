@@ -21,12 +21,12 @@ WHERE PaymentTypeDescription = 'Cash'
 
 
 SELECT StudentID
-FROM Student
-WHERE StudentID IN 
-	(SELECT StudentID
-	FROM Activity
-	INNER JOIN Club ON Activity.ClubId = Club.ClubId
-	WHERE Club.ClubName = 'Association of Computing Machinery')
+FROM Activity
+WHERE ClubId IN (
+	SELECT ClubID
+	FROM Club	
+	WHERE ClubName = 'Association of Computing Machinery'
+)
 
 SELECT Student.StudentID
 FROM Student

@@ -168,3 +168,27 @@ LEFT JOIN Registration
 GROUP BY FirstName, LastName, Student.StudentID
 -- GROUP BY everything in the SELECT + something unique
 ORDER BY FirstName, LastName
+
+
+---------------------------------- Oct 25 ----------------------------------
+SELECT FirstName, LastName, StudentID AS ID
+FROM Student
+UNION
+SELECT FirstName, LastName, StaffID
+FROM Staff
+
+SELECT FirstName, LastName
+FROM Student
+UNION ALL -- including duplicates
+SELECT FirstName, LastName
+FROM Staff
+
+-- get me a list of all students who have never made a payment
+SELECT FirstName, LastName, Student.StudentID
+FROM Student
+LEFT JOIN Payment ON Student.StudentID = Payment.StudentID
+WHERE Amount IS NULL
+
+SELECT FirstName, LastName, StudentID
+FROM Student
+WHERE StudentID NOT IN (SELECT StudentID FROM Payment)
