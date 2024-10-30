@@ -263,6 +263,8 @@ GO
 
 --5.	Create a stored procedure that will accept a year and will archive all registration records from that year (startdate is that year) from the registration table to an archiveregistration table. Copy all the appropriate records from the registration table to the archiveregistration table and delete them from the registration table. The archiveregistration table will have the same definition as the registration table but will not have any constraints.
 
+DROP TABLE IF EXISTS ArchiveRegistration
+
 -- first, let's create ArchiveRegistration
 CREATE TABLE ArchiveRegistration
 (
@@ -273,6 +275,10 @@ CREATE TABLE ArchiveRegistration
 )
 
 GO
+
+DROP PROCEDURE IF EXISTS sp_ArchiveRegistration
+GO
+
 -- create a SP with year as a param
 CREATE PROCEDURE sp_ArchiveRegistration (@year INT = NULL)
 AS
