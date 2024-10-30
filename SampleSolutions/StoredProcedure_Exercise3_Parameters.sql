@@ -6,6 +6,9 @@ USE IQSchool
 GO
 
 --1. Create a stored procedure called “GoodCourses” to select all the course names that have averages  greater than a given value. 
+DROP PROCEDURE IF EXISTS GoodCourses
+GO
+
 CREATE PROCEDURE GoodCourses (@GoodMark DECIMAL(5,2) = NULL)
 AS
 -- check if my param is null. if so, RAISERROR
@@ -31,6 +34,9 @@ GO -- marks the end of the batch
 
 --2. Create a stored procedure called “HonorCoursesForOneTerm” to select all the course names that have average > a given value in a given semester.
 -- *can check parameters in one conditional expression and a common message printed if any of them are missing*
+DROP PROCEDURE IF EXISTS HonorCoursesForOneTerm
+GO
+
 CREATE PROCEDURE HonorCoursesForOneTerm (
 					@MinAvg DECIMAL(5,2) = NULL
 					, @Semester CHAR(5) = NULL) 
@@ -63,6 +69,9 @@ EXEC HonorCoursesForOneTerm 80, 'A100'
 
 
 --3. Create a stored procedure called “NotInACourse” that lists the full names of the staff that are not taught a given courseID.
+
+DROP PROCEDURE IF EXISTS NotInACourse
+GO
 
 CREATE PROCEDURE NotInACourse (@CourseID CHAR(8) = NULL)
 AS
