@@ -36,6 +36,9 @@ GO -- end of the batch
 
 --2.	Create a stored procedure called ‘DeleteClub’ to delete a club record.
 
+DROP PROCEDURE IF EXISTS DeleteClub
+GO
+
 CREATE PROCEDURE DeleteClub (@ClubID VARCHAR(10) = NULL)
 AS
 
