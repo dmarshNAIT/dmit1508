@@ -4,8 +4,22 @@ GO
 --**Create or Alter Procedure has to be the first statement in a batch so place Go in between each question to execute the previous batch (question) and start another. **
 
 --1. Create a stored procedure called “HonorCourses” to select all the course names that have averages >80%.
+CREATE PROCEDURE HonorCourses AS
 
+SELECT CourseName
+FROM Course
+INNER JOIN Offering ON Course.CourseId = Offering.CourseId
+INNER JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
+GROUP BY CourseName, Course.CourseId
+HAVING AVG(Mark) > 80
 
+RETURN -- this is the end of the SP
+GO -- this is the end of the batch
+
+-- how to execute this SP:
+EXEC HonorCourses
+-- how to see the definition of this SP:
+EXEC sp_helptext HonorCourses
 
 
 --2. Create a stored procedure called “HonorCoursesOneTerm” to select all the course names that
