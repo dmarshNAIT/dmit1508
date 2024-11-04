@@ -3,16 +3,43 @@
 USE IQSchool
 GO
 
+SELECT * FROM Club
+SELECT * FROM Activity
+-- CHESS has one member, CSS has lots of members
+
 --1. Declare a variable called @ClubID.
+DECLARE @ClubID VARCHAR(10)
 -- Assign a value to @ClubID (it can be any club)
--- (optional) create another variable called @StudentCount, and give it a value.
--- If the count of students in that club is greater than 2 print ‘A successful
---club!’. If the count is not greater than 2 print ‘Needs more members!’.
+SET @ClubID = 'CSS'
+-- create another variable called @StudentCount, and give it a value.
+DECLARE @StudentCount INT
+
+SELECT @StudentCount = COUNT(StudentID) 
+FROM Activity 
+WHERE Activity.ClubId = @ClubID
+-- If the count of students in that club is greater than 2 print ‘A successful club!’. If the count is not greater than 2 print ‘Needs more members!’.
+IF @StudentCount > 2
+	BEGIN
+	PRINT 'A successful club!'
+	END
+ELSE -- otherwise, if it's NOT greater than 2
+	BEGIN
+	PRINT 'Needs more members!'
+	END
 
 
 --2. Declare a variable named @StudentID, and give it any valid student ID as a value.
+DECLARE @StudentID INT
+SET @StudentID = 199899200 -- Ivy Kent
+
 -- Declare a variable named @CourseCosts, and assign it the appropriate value.
+DECLARE @CourseCosts DECIMAL(8,2)
+SELECT @CourseCosts = 
+
 -- Declare a variable named @StudentPayments, and assign it the appropriate value.
+DECLARE @StudentPayments MONEY
+SELECT @StudentPayments = 
+
 -- Each course has a cost. If the total of the costs for the courses the
 --student is registered in is more than the total of the payments that student has
 --made, then print ‘balance owing!’ otherwise print ‘Paid in full! Welcome to IQ
