@@ -34,16 +34,32 @@ SET @StudentID = 199899200 -- Ivy Kent
 
 -- Declare a variable named @CourseCosts, and assign it the appropriate value.
 DECLARE @CourseCosts DECIMAL(8,2)
-SELECT @CourseCosts = 
+
+SELECT @CourseCosts = SUM(CourseCost)
+FROM Course
+INNER JOIN Offering ON Course.CourseId = Offering.CourseId
+INNER JOIN Registration ON Offering.OfferingCode = Registration.OfferingCode
+WHERE StudentID = @StudentID
 
 -- Declare a variable named @StudentPayments, and assign it the appropriate value.
 DECLARE @StudentPayments MONEY
-SELECT @StudentPayments = 
+
+SELECT @StudentPayments = SUM(Amount) 
+FROM Payment 
+WHERE StudentID = @StudentID
 
 -- Each course has a cost. If the total of the costs for the courses the
 --student is registered in is more than the total of the payments that student has
 --made, then print ‘balance owing!’ otherwise print ‘Paid in full! Welcome to IQ
 --School!’
+IF @CourseCosts > @StudentPayments
+	BEGIN
+	PRINT 'Balance Owing!'
+	END
+ELSE 
+	BEGIN
+	PRINT 'Paid in full! Welcome to IQ School!'
+	END
 --Do Not use the BalanceOwing field in your solution.
 
 
@@ -54,7 +70,34 @@ SELECT @StudentPayments =
 
 
 --4. Declare a variable called @StaffID and give it a valid staff ID value.
+DECLARE @StaffID SMALLINT
+
+SET @StaffID = 4
+
 -- Declare a variable that holds the # of classes that staff member has taught.
+DECLARE @ClassCount INT
+
+SELECT @ClassCount = COUNT(OfferingCode)
+FROM Offering
+WHERE StaffID = @StaffID
+
 -- If the number of classes the staff member has ever taught is between 0 and 2 print
 --‘Well done!’, if it is between 3 and 5 print ‘Exceptional effort!’, if the number is
 --greater than 5 print ‘Totally Awesome Dude!’
+
+IF @ClassCount <= 2
+	BEGIN
+	PRINT 'Well done!'
+	END
+ELSE IF @ClassCount <=5
+	BEGIN
+	PRINT 'Exceptional effort!'
+	END
+ELSE 
+	BEGIN
+	PRINT 'Totally awesome, dude!'
+	END
+
+-- StaffID 1 has taught 0 courses: should say "Well Done"
+-- StaffID 6 has taught 3 courses: should say "Exceptional Effort"
+-- StaffID 4 has taught 6 courses: should say "Totally Awesome, Dude!"
