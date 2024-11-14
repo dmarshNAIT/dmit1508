@@ -6,6 +6,9 @@ GO
 
 -- it will SELECT the full name, city, and birthday of that student
 
+DROP PROCEDURE IF EXISTS LookUpStudent
+GO
+
 CREATE PROCEDURE LookupStudent (@StudentID INT = NULL) 
 AS
 
@@ -18,9 +21,19 @@ IF @StudentID IS NULL
 -- otherwise, I will SELECT the student info
 ELSE
 	BEGIN
-	SELECT FirstName + ' ' + LastName AS FullName, City, Birthdate
-	FROM Student
-	WHERE Student.StudentID = @StudentID
+
+	-- let's make sure it's a valid Student ID
+	IF EXISTS (SELECT * FROM Student WHERE StudentID = @StudentID)
+		BEGIN
+
+		SELECT FirstName + ' ' + LastName AS FullName, City, Birthdate
+		FROM Student
+		WHERE Student.StudentID = @StudentID
+		END
+	ELSE -- there is no student with that ID
+
+		RAISERROR('Invalid StudentID', 16, 1)
+
 	END
 
 RETURN -- this marks the END of the stored procedure
@@ -29,5 +42,6 @@ RETURN -- this marks the END of the stored procedure
 -- try to run it without any parameters
 EXEC LookupStudent
 -- try to run it with a good parameter
-
+EXEC LookupStudent 199899200
 -- try to run it with a bad parameter
+EXEC LookupStudent 123
