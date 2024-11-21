@@ -63,7 +63,7 @@ IF @StudentID IS NULL OR @OfferingCode IS NULL
 	RAISERROR('Student ID and Offering Code are both required fields', 16, 1)
 	END --1
 ELSE -- parameters WERE provided
-	BEGIN
+	BEGIN --2
 
 	DECLARE @NumberOfStudents INT
 	DECLARE @MaxStudents INT
@@ -81,44 +81,52 @@ ELSE -- parameters WERE provided
 	WHERE OfferingCode = @OfferingCode
 
 	IF @NumberOfStudents >= @MaxStudents
-		BEGIN
+		BEGIN --3
 		RAISERROR('Sorry, that class is full', 16, 1)
-		END
+		END --3
 	ELSE -- there is room!
-		BEGIN
+		BEGIN --4
 		BEGIN TRANSACTION ------------------------------------------ START of transaction
 
 		INSERT INTO Registration(OfferingCode, StudentID)
 		VALUES (@OfferingCode, @StudentID)
 
 		IF @@ERROR != 0 -- INSERT failed :(
-			BEGIN
+			BEGIN --5
 			RAISERROR('Could not register student', 16, 1)
 			ROLLBACK TRANSACTION-----------------------------------------
-			END
+			END --5
 		ELSE -- INSERT worked!!!!
-			BEGIN
+			BEGIN --6
 		
 			UPDATE Student
 			SET BalanceOwing = BalanceOwing + @CourseCost
 			WHERE StudentID = @StudentID
 
 			IF @@ERROR != 0 -- UPDATE failed :(
-				BEGIN
+				BEGIN --7
 				RAISERROR('Could not update student', 16, 1)
 				ROLLBACK TRANSACTION------------------------------------------
-				END
+				END  --7
 			ELSE -- the UPDATE worked!!!
-				BEGIN
+				BEGIN --8
 				COMMIT TRANSACTION------------------------------------ END
-				END
-
-			END
-		END
-	END
+				END --8
+			END --6
+		END --4
+	END --2
 RETURN -- the end of the SP
 
 GO
+
+-- test
+-- test once with no params
+-- test once the class is full
+-- test once for a failed INSERT
+-- test once for a failed UPDATE
+-- test once with valid params
+
+
 
 --6. Create a procedure called ‘StudentPayment’ that accepts PaymentID, Student ID,
 --paymentamount, and paymentTypeID as parameters. Add the payment to the payment table
