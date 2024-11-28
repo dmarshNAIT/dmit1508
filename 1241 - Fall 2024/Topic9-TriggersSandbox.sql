@@ -80,3 +80,39 @@ VALUES ('Donald Duck', 'NOT Looney Tunes', 3, -.03)
 SELECT * FROM MovieCharacter
 
 -- test with many rows -- once successful, once with a violation
+GO
+
+-- Practice Q#3
+-- Agent Fee cannot increase by MORE than 100% in a single UPDATE
+
+CREATE TRIGGER TR_PracticeQ3
+	ON Agent
+	FOR UPDATE
+AS
+
+-- make sure the trigger needs to run
+IF @@ROWCOUNT > 0 AND UPDATE(AgentFee)
+	BEGIN
+	-- if so, check if the rule was broken.
+
+		-- NOT ALLOWED:
+		-- new price > 2 * old price
+		-- inserted.AgentFee > deleted.AgentFee * 2
+
+		IF EXISTS (SELECT *
+					FROM inserted
+					INNER JOIN deleted ON inserted.AgentID = deleted.AgentID
+					WHERE inserted.AgentFee > deleted.AgentFee * 2
+					)
+			BEGIN
+			-- if the rule was broken, ROLLBACK & RAISERROR
+				RAISERROR('That is too much of an increase', 16, 1)
+				ROLLBACK TRANSACTION
+			END
+	END
+RETURN
+
+-- testing time:
+-- make sure it works with 0 updates
+-- make sure it works with 1 agent updated that does NOT violate the rule
+-- make sure it works with many agents updated that does DOES violate the rule
