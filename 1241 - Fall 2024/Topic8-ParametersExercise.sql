@@ -67,8 +67,37 @@ EXEC ListAProvince 'AB'
 EXEC ListAProvince 'BC'
 EXEC ListAProvince 'NS'
 
+GO
 --6. Create a stored procedure called “Transcript” to select the transcript for a given StudentID.
 --Select the StudentID, full name, course IDs, course names, and marks.
+DROP PROCEDURE IF EXISTS Transcript
+GO
+
+CREATE PROCEDURE Transcript (@StudentID INT = NULL)
+AS
+-- check for missing params, error if so
+IF @StudentID IS NULL
+	BEGIN
+	RAISERROR('You forgot to give me the student ID, silly', 16, 1)
+	END
+-- Select the StudentID, full name, course IDs, course names, and marks.
+ELSE
+	BEGIN
+	SELECT Student.StudentID
+		, Student.FirstName + ' ' + Student.LastName AS FullName
+		, Course.CourseId
+		, Course.CourseName
+		, Registration.Mark
+	FROM Student
+	INNER JOIN Registration ON Student.StudentID = Registration.StudentID
+	INNER JOIN Offering ON Offering.OfferingCode = Registration.OfferingCode
+	INNER JOIN Course ON Course.CourseId = Offering.CourseId
+	WHERE Student.StudentID = @StudentID
+	END
+
+RETURN -- marks the end of the SP
+
+GO
 
 --7. Create a stored procedure called “PaymentTypeCount” to select the count of payments made for a given payment type description.
 

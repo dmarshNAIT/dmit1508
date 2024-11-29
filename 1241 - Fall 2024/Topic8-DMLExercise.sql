@@ -39,14 +39,38 @@ SELECT * FROM Club
 -- test with params that will cause the INSERT to fail:
 EXEC AddClub 'RBAS', 'Really Bad Architecture Society'
 -- this is a duplicate PK so this INSERT will not work.
-
+GO
 
 --2. Create a stored procedure called ‘DeleteClub’ to delete a club record.
---3. Create a stored procedure called ‘Updateclub’ to update a club record. Do not update the
---primary key!
 
--- DO THIS ONE
+--3. Create a stored procedure called ‘Updateclub’ to update a club record. Do not update the primary key!
+-- given a ClubID and a new Club Name, re-name an existing club.
 
+CREATE PROCEDURE UpdateClub(@ClubID VARCHAR(10) = NULL, @NewClubName VARCHAR(50) = NULL)
+AS
+
+-- check for missing parameters. Error if so.
+IF @ClubID IS NULL OR @NewClubName IS NULL
+	BEGIN
+	RAISERROR('You are missing parameters!!', 16, 1)
+	END
+	-- check if that Club exists
+ELSE IF NOT EXISTS (SELECT * FROM Club WHERE ClubID = @ClubID)
+		BEGIN
+		RAISERROR('That is not a real club!', 16, 1)
+		END
+	ELSE 
+		BEGIN
+		-- UPDATE Club table, change the value of ClubName
+		UPDATE Club SET ClubName = @NewClubName WHERE ClubID = @ClubID
+		-- check if the UPDATE worked
+		IF @@error != 0
+			BEGIN
+			RAISERROR('Something went wrong in the update.', 16, 1)
+			END
+		END
+RETURN
+GO
 
 --4. Create a stored procedure called ‘ClubMaintenance’. It will accept parameters for both ClubID
 --and ClubName as well as a parameter to indicate if it is an insert, update or delete. This
