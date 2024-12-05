@@ -25,11 +25,15 @@ GO
 
 -- testing time!
 -- test with an UPDATE of 1 row
+/*
 UPDATE Student 
 SET BalanceOwing = 99000
 WHERE StudentID = 200978500
+*/
 
-SELECT * FROM Student
+-- SELECT * FROM Student
+
+
 -- test with an UPDATE of many rows
 UPDATE Student 
 SET BalanceOwing = 99000
@@ -84,7 +88,10 @@ GO
 
 -- Practice Q#3
 -- Agent Fee cannot increase by MORE than 100% in a single UPDATE
+DROP TRIGGER IF EXISTS TR_PracticeQ3
+GO
 
+GO
 CREATE TRIGGER TR_PracticeQ3
 	ON Agent
 	FOR UPDATE
@@ -97,12 +104,12 @@ IF @@ROWCOUNT > 0 AND UPDATE(AgentFee)
 
 		-- NOT ALLOWED:
 		-- new price > 2 * old price
-		-- inserted.AgentFee > deleted.AgentFee * 2
+		-- inserted.AgentFee > 2 * deleted.AgentFee 
 
 		IF EXISTS (SELECT *
 					FROM inserted
 					INNER JOIN deleted ON inserted.AgentID = deleted.AgentID
-					WHERE inserted.AgentFee > deleted.AgentFee * 2
+					WHERE inserted.AgentFee > 2 * deleted.AgentFee
 					)
 			BEGIN
 			-- if the rule was broken, ROLLBACK & RAISERROR
@@ -116,3 +123,88 @@ RETURN
 -- make sure it works with 0 updates
 -- make sure it works with 1 agent updated that does NOT violate the rule
 -- make sure it works with many agents updated that does DOES violate the rule
+GO
+
+-- Practice Q #4
+-- Create a trigger that enforces a rule that a MovieCharacter cannot be deleted if their Agent's AgentFee is >= 50.
+DROP TRIGGER IF EXISTS TR_PracticeQ4
+GO
+
+
+CREATE TRIGGER TR_PracticeQ4
+	ON MovieCharacter
+	FOR DELETE
+AS
+
+-- first: see if the trigger needs to run
+IF @@ROWCOUNT > 0
+	BEGIN
+
+	-- second: see if the rule was broken
+	-- look at the deleted characters, and see if any have an agent whose fee >= 50
+	IF EXISTS (		SELECT Agent.AgentFee -- or SELECT *, or any field in the table
+					FROM deleted -- remember, deleted has the same columns as the base table (MovieCharacter)
+					INNER JOIN Agent ON deleted.AgentID = Agent.AgentID
+					WHERE Agent.AgentFee >= 50
+				)
+		BEGIN
+		RAISERROR('Your agent makes too much money, you cannot be deleted.', 16, 1)
+		ROLLBACK TRANSACTION
+		END
+
+	END
+
+RETURN -- marks the end of the trigger
+
+GO
+
+-- Practice Q #5
+-- Create a trigger that enforces a rule that an Agent cannot represent more than 2 movie characters.
+
+CREATE TRIGGER TR_PracticeQ5
+	ON MovieCharacter
+	FOR INSERT, UPDATE
+AS
+
+-- first: check if the trigger needs to run
+IF @@ROWCOUNT > 0 AND UPDATE(AgentID)
+	BEGIN
+
+	-- second: check if the rule was broken
+	-- look at the new inserted characters / newly changed characters
+	-- connect them to all the OTHER characters with the same AgentID
+	-- check if that count of characters PER AGENT > 2
+	IF EXISTS (			SELECT *
+						FROM inserted
+						INNER JOIN MovieCharacter ON inserted.AgentID = MovieCharacter.AgentID 
+						GROUP BY MovieCharacter.AgentID -- we want a count PER AGENT
+						HAVING COUNT(MovieCharacter.CharacterID) > 2 ) -- where # of characters > 2
+		BEGIN
+		RAISERROR('That is too many characters!', 16, 1)
+		ROLLBACK TRANSACTION
+		END
+	END
+RETURN
+GO
+
+-- test time!
+-- make sure it works for INSERT						DONE (line 202)
+-- make sure it works for UPDATE
+-- make sure it works for 0 rows
+-- make sure it works for 1 row							DONE (line 202)
+-- make sure it works for many rows
+-- make sure it works when the rule is violated			DONE (line 202)
+-- make sure it works when the rule is NOT violated		DONE (line 207)
+
+SELECT * FROM MovieCharacter
+-- AgentID #2 already has 2 characters
+-- let's try adding another.
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage, AgentID)
+VALUES ('Rodney', 'ET', 5, 100000, 2)
+-- expectation: not allowed because too many characters
+-- actual: the same!
+
+INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Characterwage, AgentID)
+VALUES ('Rodney', 'ET', 5, 100000, 3)
+-- expectation: should be allowed!
+-- actual: it was!
