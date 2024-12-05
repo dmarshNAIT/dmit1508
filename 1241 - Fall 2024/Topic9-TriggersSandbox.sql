@@ -188,11 +188,16 @@ RETURN
 GO
 
 -- test time!
+-- make sure it works for all the DML operations specified:
 -- make sure it works for INSERT						DONE (line 202)
--- make sure it works for UPDATE
--- make sure it works for 0 rows
+-- make sure it works for UPDATE						DONE (line 212)
+
+-- make sure it works for any number of rows:
+-- make sure it works for 0 rows						DONE (line 212)
 -- make sure it works for 1 row							DONE (line 202)
--- make sure it works for many rows
+-- make sure it works for many rows						DONE (line 218)
+
+-- make sure both branches of the IF statement are tested:
 -- make sure it works when the rule is violated			DONE (line 202)
 -- make sure it works when the rule is NOT violated		DONE (line 207)
 
@@ -208,3 +213,75 @@ INSERT INTO MovieCharacter (CharacterName, CharacterMovie, CharacterRating, Char
 VALUES ('Rodney', 'ET', 5, 100000, 3)
 -- expectation: should be allowed!
 -- actual: it was!
+
+UPDATE MovieCharacter
+SET AgentID = 3
+WHERE CharacterID = 99999
+-- expectation: successfully update 0 rows
+-- actual: SAME!
+
+UPDATE MovieCharacter
+SET AgentID = 3
+-- expectation: not allowed
+-- actual: same!
+
+-- Practice Q #6
+-- Create a trigger to Log when changes are made to the CourseCost in the Course table. The changes will be inserted in to the following Logging table:
+
+USE IQSchool
+GO
+
+DROP TABLE IF EXISTS CourseChanges
+GO
+
+CREATE TABLE CourseChanges(
+LogID INT IDENTITY(1,1) NOT NULL 
+CONSTRAINT pk_CourseChanges PRIMARY KEY CLUSTERED
+,	ChangeDate datetime NOT NULL
+,	OldCourseCost money NOT NULL
+,	NewCourseCost money NOT NULL
+,	CourseID CHAR(8) NOT NULL 		-- not CHAR(7)
+)
+
+
+SELECT * FROM CourseChanges
+
+GO
+
+CREATE TRIGGER TR_PracticeQ6
+	ON Course
+	FOR UPDATE
+AS
+
+-- first: check if the trigger needs to run (are there any records to log?)
+IF @@ROWCOUNT > 0 AND UPDATE(CourseCost)	
+	BEGIN
+	-- if so, INSERT records into the Logging table
+
+	INSERT INTO CourseChanges (ChangeDate, OldCourseCost, NewCourseCost, CourseID)
+	SELECT GetDate(), deleted.CourseCost, inserted.CourseCost, inserted.CourseID
+	FROM inserted 
+	INNER JOIN deleted ON inserted.CourseId = deleted.CourseId
+	WHERE inserted.CourseCost != deleted.CourseCost -- only want to log courses with a different cost
+
+	END
+RETURN
+
+-- testing
+-- does it work for 0 rows			Yes! tested on line 282
+-- does it work for 1 row			YES! Tested on line 275
+-- does it work for many rows?		Yes! Tested on line 286
+
+UPDATE Course
+SET CourseCost = 0
+WHERE CourseID = 'DMIT1508'
+
+SELECT * FROM Course
+SELECT * FROM CourseChanges
+
+UPDATE Course
+SET CourseCost = 0
+WHERE CourseID = 'fdslkdsfkljsdfjkl'
+
+UPDATE Course
+SET CourseCost = 0
